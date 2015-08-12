@@ -25,6 +25,7 @@ def get_locations(base_url, dni, id_auth, id_security):
 
 
 def geo_distance(pos1, pos2):
+    """Distance between two points (lat, long) in meters"""
     return vincenty(pos1, pos2).m
 
 
@@ -55,10 +56,7 @@ class Station(object):
         self.id = int(self.idestacion)
         self.name = self.nombre
         self.ocupation = float(self.porcentaje)
-
-    @property
-    def position(self):
-        return self.latitud, self.longitud
+        self.position = float(self.latitud), float(self.longitud)
 
     def distance_to(self, station):
         return self.distance_to_position(station.position)
@@ -105,6 +103,12 @@ class Stations(object):
                 if station.distance_to_position(position) <= meters)
 
 
+def near(station_position, location):
+    """Within 500 meters from 'lat,long' location"""
+    position = tuple(map(float, location.split(',')))
+    return geo_distance(station_position, position) <= 500
+
+
 class Filter(object):
     def __init__(self, name, cmp, value):
         self.name = name
@@ -126,6 +130,7 @@ class Filter(object):
         u'has': operator.contains,
         u'==': operator.eq,
         u'!=': operator.ne,
+        u'near': near,
     }
 
     def __call__(self, obj):
