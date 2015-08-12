@@ -30,7 +30,7 @@ def geo_distance(pos1, pos2):
 
 
 class Station(object):
-    def __init__(self, data):
+    def __init__(self, data, stations=None):
         """Station from response item
 
     {
@@ -53,6 +53,8 @@ class Station(object):
         for key, value in data.items():
             setattr(self, key, value)
 
+        self.station = self
+        self.stations = stations
         self.id = int(self.idestacion)
         self.name = self.nombre
         self.ocupation = float(self.porcentaje)
@@ -70,7 +72,7 @@ class Station(object):
 
 class Stations(object):
     def __init__(self, stations):
-        self.stations = list(map(Station, stations))
+        self.stations = [Station(s, self) for s in stations]
         self.distances = self.compute_distances(self.stations)
         self.station_index = {station.id: station for station in self.stations}
 
@@ -120,7 +122,7 @@ class Filter(object):
     names = ('id', 'name', 'position', 'idestacion', 'nombre', 'direccion',
              'numero_estacion', 'latitud', 'longitud', 'activo', 'luz',
              'no_disponible', 'numero_bases', 'bicis_enganchadas',
-             'bases_libres', 'procentaje')
+             'bases_libres', 'procentaje', 'station')
 
     operators = {
         u'<': operator.lt,
