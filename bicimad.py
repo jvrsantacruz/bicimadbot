@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import operator
 from collections import defaultdict
 
@@ -89,19 +90,9 @@ class Stations(object):
 
         return dists
 
-    def filter_by(self, close_to=None, close_to_position=None, meters=None, **kwargs):
-        stations = self.stations
-
-        if close_to:
-            stations = self.close_to(close_to, meters)
-        elif close_to_position:
-            stations = self.close_to_position(close_to_position, meters)
-
-        for attribute, value in kwargs.items():
-            cmp = operator.eq if isinstance(value, float) else operator.contains
-            stations = filter_by(stations, attribute, value, cmp)
-
-        return stations
+    def filter_by(self, filters):
+        return (station for station in self.stations
+                if all(filter(station) for filter in filters))
 
     def close_to(self, id, meters=None):
         meters = meters or 500
@@ -114,53 +105,81 @@ class Stations(object):
                 if station.distance_to_position(position) <= meters)
 
 
-def filter_by(stations, attribute, value, cmp):
-    getter = operator.attrgetter(attribute)
-    return (station for station in stations if cmp(getter(station), value))
+class Filter(object):
+    def __init__(self, name, cmp, value):
+        self.name = name
+        self.cmp = cmp
+        self.value = value
+        self.compare = self.operators[cmp]
+        self.getter = operator.attrgetter(name)
+
+    names = ('id', 'name', 'position', 'idestacion', 'nombre', 'direccion',
+             'numero_estacion', 'latitud', 'longitud', 'activo', 'luz',
+             'no_disponible', 'numero_bases', 'bicis_enganchadas',
+             'bases_libres', 'procentaje')
+
+    operators = {
+        u'<': operator.lt,
+        u'<=': operator.le,
+        u'>': operator.gt,
+        u'>=': operator.ge,
+        u'has': operator.contains,
+        u'==': operator.eq,
+        u'!=': operator.ne,
+    }
+
+    def __call__(self, obj):
+        return self.compare(type(self.value)(self.getter(obj)), self.value)
+
+    def __repr__(self):
+        return u'Filter({},{},{})'.format(self.name, self.cmp, self.value)
 
 
 @click.group()
+@click.version_option()
 def cli():
     """BiciMad cli"""
 
 
 @cli.group()
-def stations():
+def station():
     """BidiMad stations"""
 
 
-CMPS = {
-    '<': operator.lt,
-    '<=': operator.lte,
-    '>': operator.gt,
-    '>=': operator.gte,
-    'has': operator.contains,
-    '==': operator.eq,
-    '!=': operator.neq,
-}
+def validate_filters(ctx, param, values):
+    try:
+        return tuple(Filter(value[0], value[1], value[2]) for value in values)
+    except (IndexError, ValueError):
+        raise click.BadParameter(u'filters should be in format NAME OP VALUE')
 
 
-def validate_filters(ctx, param, value):
-    if value:
-        return param.name, CMPS[value[0]], value[1]
+@station.command('list')
+@click.option('-v', '--verbose', is_flag=True)
+@click.option('-l', '--local', is_flag=True)
+@click.option('--url', default=DEFAULT_URL, envvar='BICIMAD_URL')
+@click.option('--user', envvar='BICIMAD_USER', help='DNI usuario')
+@click.option('--auth', envvar='BICIMAD_AUTH', help='login id_auth')
+@click.option('--security', envvar='BICIMAD_SECURITY', help='login id_security')
+@click.option('-f', '--filter', nargs=3, multiple=True,
+              callback=validate_filters, metavar=u'NAME OP VALUE',
+              help=u"Filter stations using conditional expressions.\n"
+              u"Available names:\n\n {}\n\n"
+              u"Available comparators:\n\n {}".format(
+                  u', '.join(Filter.names),
+                  u', '.join(Filter.operators.keys())))
+def stations_list(verbose, local, url, user, auth, security, filter):
+    """List and filter stations"""
+    if local:
+        response = json.load(open('bicimad-response.json'))
+    else:
+        response = get_locations(url, user, auth, security)
 
+    if not response['success']:
+        click.secho(u'Unsuccessful response: {}'.format(response), fg='red')
+        return
 
-def filter(*args, **kwargs):
-    kwargs['nargs'] = 2
-    kwargs['callback'] = validate_filters
-    return click.option(*args, **kwargs)
-
-
-@stations.command('list')
-@filter('--id')
-@filter('--close-to')
-@filter('--meters')
-@filter('--activo')
-@filter('--percentaje')
-@filter('--bases_libres')
-@filter('--bicis_enganchadas')
-def stations_list(**kwargs):
-    import json
-    response = json.load(open('bicimad-response.json'))
     collection = Stations.from_response(response)
-    click.echo(u'\n'.join(collection.filter_by(**kwargs)))
+
+    if verbose:
+        click.secho(u'Using filters: {}'.format(filter), fg='yellow')
+    click.echo(u'\n'.join(map(str, collection.filter_by(filter))))
