@@ -1,0 +1,4 @@
+vars
+*.pyc
+*.sw[a-z]
+*.egg-info
