@@ -105,10 +105,21 @@ class Stations(object):
                 if station.distance_to_position(position) <= meters)
 
 
-def near(station_position, location):
+def near(source, location):
     """Within 500 meters from 'lat,long' location"""
-    position = tuple(map(float, location.split(',')))
-    return geo_distance(station_position, position) <= 500
+    station = source if isinstance(source, Station) else None
+
+    if station:
+        source = station.position
+    elif not isinstance(source, tuple):  # != position
+        raise Exception(u'Cannot calculate distance to: {}'.format(source))
+
+    if u',' in location:
+        location = tuple(map(float, location.split(',')))
+    elif station:  # station id
+        location = station.stations.station_index[int(location)].position
+
+    return geo_distance(source, location) <= 500
 
 
 class Filter(object):
@@ -136,7 +147,10 @@ class Filter(object):
     }
 
     def __call__(self, obj):
-        return self.compare(type(self.value)(self.getter(obj)), self.value)
+        attr = self.getter(obj)
+        if type(attr) in (str, int, float):
+            self.value = type(attr)(self.value)
+        return self.compare(attr, self.value)
 
     def __repr__(self):
         return u'Filter({},{},{})'.format(self.name, self.cmp, self.value)
