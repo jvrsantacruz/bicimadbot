@@ -12,6 +12,8 @@ setup(
     url='https://github.com/jvrsantacruz/bicimad',
     packages=find_packages(exclude=['tests', 'tests.*']),
     install_requires=[
+        'click',
+        'geopy',
         'requests',
     ],
     classifiers=[
@@ -27,6 +29,6 @@ setup(
     ],
     platforms=['Any'],
     entry_points={
-        'console_scripts': ['bmad = bicimad:cli']
+        'console_scripts': ['bmad = bicimad.cli:cli']
     }
 )
