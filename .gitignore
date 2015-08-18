@@ -2,3 +2,6 @@ vars
 *.pyc
 *.sw[a-z]
 *.egg-info
+config.ini
+*.dump
+*.response
