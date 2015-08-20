@@ -4,31 +4,32 @@ from setuptools import setup, find_packages
 
 
 setup(
-    name='bicimad',
-    version='0.0.1',
-    description='BiciMad unofficial api',
-    author='Javier Santacruz',
-    author_email='javier.santacruz.lc@gmail.com',
-    url='https://github.com/jvrsantacruz/bicimad',
-    packages=find_packages(exclude=['tests', 'tests.*']),
+    name=u'bicimad',
+    version=u'0.0.1',
+    description=u'BiciMad unofficial api',
+    author=u'Javier Santacruz',
+    author_email=u'javier.santacruz.lc@gmail.com',
+    url=u'https://github.com/jvrsantacruz/bicimad',
+    packages=find_packages(exclude=[u'tests', u'tests.*']),
     install_requires=[
-        'click',
-        'geopy',
-        'requests',
+        u'click',
+        u'geopy',
+        u'bottle',
+        u'requests',
     ],
     classifiers=[
-        'Environment :: Console',
-        'Operating System :: POSIX',
-        'Development Status :: 3 - Alpha',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
-        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+        u'Environment :: Console',
+        u'Operating System :: POSIX',
+        u'Development Status :: 3 - Alpha',
+        u'Programming Language :: Python',
+        u'Programming Language :: Python :: 2',
+        u'Programming Language :: Python :: 2.7',
+        u'Programming Language :: Python :: 3.3',
+        u'Programming Language :: Python :: 3.4',
+        u'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
     ],
-    platforms=['Any'],
+    platforms=[u'Any'],
     entry_points={
-        'console_scripts': ['bmad = bicimad.cli:cli']
+        u'console_scripts': [u'bmad = bicimad.cli:cli']
     }
 )
