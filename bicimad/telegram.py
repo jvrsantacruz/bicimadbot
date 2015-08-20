@@ -19,7 +19,7 @@ def itemgetter(*fields):
 unpack_message = itemgetter('from', 'chat', 'text', 'location')
 unpack_user = itemgetter('first_name', 'last_name', 'id')
 unpack_location = itemgetter('latitude', 'longitude')
-format_station = '{0.bikes} | ({0.id}) {0.direccion}'.format
+format_station = '{0.bikes} bicis en {0.direccion} ({0.id})'.format
 
 
 def repr_user(user):
@@ -48,30 +48,30 @@ def process_message(update_id, message, telegram, bicimad):
                     update_id, chat_id, repr_user(user), lat, long)
 
         stations = bicimad.stations.nearest_active_stations_with_bikes((lat, long))
-        telegram.send_message(chat_id, 'Estaciones con bicis que mejor te pillan:\n\n'
-                            + '\n'.join(map(format_station, stations)))
+        message = ('Las bicis que te pillan más cerca son:\n\n'
+                   + '\n'.join(map(format_station, stations)))
+        telegram.send_message(chat_id, message)
     else:
         log.info(u'(update: %d chat: %d) Unmanaged message from %s: %s',
                     update_id, chat_id, repr_user(user), message)
         telegram.send_message(chat_id, u'No te pillo')
 
 
-def process_updates(updates, context, telegram, bicimad):
+def process_updates(updates, config, telegram, bicimad):
     log.debug(u'Got updates: {}'.format(updates))
     if not updates.get('ok'):
         log.error(u'Got bad update response: %r',
                   updates.get('description', u'Unknown'))
         return
 
-    last_update = context.get('offset', 0)
+    last_update = config.get('telegram.offset', 0)
     log.debug('Current update offset: %d', last_update)
 
     for update in updates['result']:
         update_id = update.get('update_id')
-        if update_id > last_update:
-            log.debug('(update: %d) Update offset: %d to %d',
-                      update_id, last_update, update_id)
-            last_update = update_id
+        log.debug('(update: %d) Update offset: %d to %d',
+                    update_id, last_update, update_id)
+        last_update = update_id + 1
 
         message = update.get('message')
         if message is None:
@@ -82,6 +82,7 @@ def process_updates(updates, context, telegram, bicimad):
         process_message(update_id, message, telegram, bicimad)
 
     log.debug(u'Last offset: %d', last_update)
+    config['telegram.offset'] = last_update
 
 
 class Telegram(object):
