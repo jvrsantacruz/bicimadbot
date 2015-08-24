@@ -1,0 +1,62 @@
+{
+  "ok": true,
+  "result": [
+    {
+      "update_id": 987235637,
+      "message": {
+        "message_id": 21,
+        "from": {
+          "id": 4128581,
+          "first_name": "Javier",
+          "last_name": "Santacruz"
+        },
+        "chat": {
+          "id": 4128581,
+          "first_name": "Javier",
+          "last_name": "Santacruz"
+        },
+        "date": 1439843938,
+        "location": {
+          "longitude": -3.694103,
+          "latitude": 40.405742
+        }
+      }
+    },
+    {
+      "update_id": 987235638,
+      "message": {
+        "message_id": 25,
+        "from": {
+          "id": 4128581,
+          "first_name": "Javier",
+          "last_name": "Santacruz"
+        },
+        "chat": {
+          "id": 4128581,
+          "first_name": "Javier",
+          "last_name": "Santacruz"
+        },
+        "date": 1439860509,
+        "text": "/bici"
+      }
+    },
+    {
+      "update_id": 987235639,
+      "message": {
+        "message_id": 26,
+        "from": {
+          "id": 4128581,
+          "first_name": "Javier",
+          "last_name": "Santacruz"
+        },
+        "chat": {
+          "id": 4128581,
+          "first_name": "Javier",
+          "last_name": "Santacruz"
+        },
+        "date": 1439860519,
+        "text": "/bici"
+      }
+    }
+  ]
+}
