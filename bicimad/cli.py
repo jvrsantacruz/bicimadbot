@@ -80,7 +80,7 @@ def poll(offset, sleep):
         except KeyboardInterrupt:
             raise click.ClickError(u'Exiting')
         except Exception as error:
-            msg = u'Catched error: {}'.format(unicode(error))
+            msg = u'Catched error: {}'.format(str(error))
             log.exception(msg)
             click.secho(msg, fg='red')
 
