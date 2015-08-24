@@ -5,3 +5,6 @@ vars
 config.ini
 *.dump
 *.response
+dist
+env
+wheelhouse
