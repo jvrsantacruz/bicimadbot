@@ -32,12 +32,21 @@ def process_message(update_id, message, telegram, bicimad):
 
     if text:
         if text.startswith('/'):
-            command = text.split()
-            if command[0] in ('/bici', '/plaza', '/estacion'):
-                log.info(u'(update: %d chat: %d) Got command: %s from: %s',
-                            update_id, chat_id, text, repr_user(user))
-                telegram.send_message(chat_id, u'¡Susordenes!')
-                return
+            command, arguments = text.split(' ', 1)
+            if command == '/start':
+                response = "¡Hola! Puedo echarte un cable para encontrar \
+                    una bicicleta. Comparte conmigo tu posición y te diré \
+                    las que tienes más cerca"
+
+            elif command in ('/bici', '/plaza', '/estacion'):
+                response = "Estos comandos funcionarán próximamente"
+            else:
+                response = "No reconozco esa orden"
+
+            log.info(u'(update: %d chat: %d) Got command: %s from: %s',
+                        update_id, chat_id, text, repr_user(user))
+            telegram.send_message(chat_id, response)
+            return
 
         log.info('(update: %d chat: %d) Got message from %s: %s',
                     update_id, chat_id, repr_user(user), text)
