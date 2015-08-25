@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name=u'bicimad',
-    version=u'1.0.1',
+    version=u'1.0.2',
     description=u'BiciMad unofficial api',
     author=u'Javier Santacruz',
     author_email=u'javier.santacruz.lc@gmail.com',
