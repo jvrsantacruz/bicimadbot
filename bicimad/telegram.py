@@ -32,7 +32,7 @@ def process_message(update_id, message, telegram, bicimad):
 
     if text:
         if text.startswith('/'):
-            command, arguments = text.split(' ', 1)
+            command = text.split(' ', 1)[0]
             if command == '/start':
                 response = "¡Hola! Puedo echarte un cable para encontrar \
                     una bicicleta. Comparte conmigo tu posición y te diré \
