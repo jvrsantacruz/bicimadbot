@@ -24,7 +24,7 @@ def get_locations(base_url, dni, id_auth, id_security):
     return requests.post(url, json=data, headers=headers).json()
 
 
-class Station(object):
+class Station:
     def __init__(self, data):
         """Station from response item
 
@@ -58,7 +58,7 @@ class Station(object):
         return geo_distance(self.position, position)
 
 
-class Stations(object):
+class Stations:
     def __init__(self, stations):
         self.stations = map(Station, stations)
 
@@ -85,7 +85,7 @@ class Stations(object):
         return sorted(stations, key=operator.attrgetter('distance'))[:max]
 
 
-class BiciMad(object):
+class BiciMad:
     def __init__(self, url, user, auth, security):
         self.url = url
         self.user = user
@@ -101,5 +101,7 @@ class BiciMad(object):
 
     @property
     def stations(self):
-        return Stations.from_response(
-            get_locations(self.url, self.user, self.auth, self.security))
+        return Stations.from_response(self.get_locations())
+
+    def get_locations(self):
+        return get_locations(self.url, self.user, self.auth, self.security)
