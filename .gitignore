@@ -8,3 +8,4 @@ config.ini
 dist
 env
 wheelhouse
+.tox

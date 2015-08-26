@@ -3,7 +3,7 @@
 from bicimad.bicimad import BiciMad, Stations
 from bicimad.telegram import Telegram, process_message
 
-from mock import Mock
+from unittest.mock import Mock
 from hamcrest import assert_that, contains_string, all_of, contains
 
 
