@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 import json
-import time
 import logging
 
 import click
@@ -27,6 +26,10 @@ def setup_logging(verbosity):
     logging.basicConfig(level=level, format=output_format)
 
 
+def error(message):
+    raise click.ClickException(message)
+
+
 @click.group()
 @click.version_option()
 def cli():
@@ -46,45 +49,51 @@ def telegram_cli():
     setup_logging(2)
 
 
-@telegram_cli.command()
-@click.option('-o', '--offset', default=0)
-def updates(offset):
-    """See pending updates from given offset"""
-    config = get_config()
-    if offset:
-        config['telegram.offset'] = offset
+def telegram_options(function):
+    options = [
+        click.option('-o', '--offset', default=0),
+        click.option('-t', '--timeout', help="poll timeout"),
+        click.option('-c', '--config', type=click.Path(dir_okay=False, exists=True))
+    ]
 
+    for option in options:
+        function = option(function)
+
+    return function
+
+
+@telegram_cli.command()
+@telegram_options
+def updates(config, offset, timeout):
+    """See pending updates from given offset"""
+    config, tgram_api, bmad_api = init_apis(config, offset, timeout)
     click.echo('offset: {}'.format(config.get('telegram.offset')))
-    tgram_api = telegram.Telegram.from_config(config)
     updates = tgram_api.get_updates(config.get('telegram.offset'))
     click.echo(json.dumps(updates, indent=4, sort_keys=True))
     click.echo('offset: {}'.format(config.get('telegram.offset')))
 
 
 @telegram_cli.command()
-@click.option('-o', '--offset', default=0)
-def update(offset):
-    """Telegram test api"""
-    process_updates(offset)
+@telegram_options
+def update(config, offset, timeout):
+    """Get new updates from the api"""
+    process_updates(config, offset, timeout)
     click.secho('Done', fg='green')
 
 
 @telegram_cli.command()
-@click.option('--offset', default=0)
-@click.option('-s', '--sleep', default=30)
-def poll(offset, sleep):
-    """Telegram test api"""
+@telegram_options
+def poll(config, offset, timeout):
+    """Poll the api for new updates"""
     while True:
         try:
-            process_updates(offset)
+            process_updates(config, offset, timeout)
         except KeyboardInterrupt:
-            raise click.ClickError(u'Exiting')
+            raise click.ClickException(u'Exiting')
         except Exception as error:
             msg = u'Catched error: {}'.format(str(error))
             log.exception(msg)
             click.secho(msg, fg='red')
-
-        time.sleep(sleep)
 
 
 def save_offset(filename, config):
@@ -103,20 +112,32 @@ def get_offset(filename, config):
 OFFSET_FILE = '/tmp/bmad_offset.json'
 
 
-def get_config():
-    config = ConfigDict().load_config(os.getenv(u'APP_CONFIG'))
+def getenv(name):
+    return os.getenv(name) \
+        or error(u'Missing ${} environment variable'.format(name))
+
+
+def get_config(path):
+    config = ConfigDict().load_config(path or getenv('APP_CONFIG'))
     get_offset(OFFSET_FILE, config)
     return config
 
 
-def process_updates(offset):
-    config = get_config()
+def init_apis(config, offset, timeout):
+    config = get_config(config)
     if offset:
         config['telegram.offset'] = offset
+    if timeout is not None:
+        config['telegram.poll_timeout'] = timeout
 
     tgram_api = telegram.Telegram.from_config(config)
     bmad_api = bicimad.BiciMad.from_config(config)
+
+    return config, tgram_api, bmad_api
+
+
+def process_updates(config, offset, timeout):
+    config, tgram_api, bmad_api = init_apis(config, offset, timeout)
     updates = tgram_api.get_updates(config.get('telegram.offset'))
     telegram.process_updates(updates, config, tgram_api, bmad_api)
-
     save_offset(OFFSET_FILE, config)
