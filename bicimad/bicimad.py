@@ -96,6 +96,11 @@ class Stations:
 
         return sorted(search(), key=operator.attrgetter('index'))[:max]
 
+    def active_stations_with_bikes_by_id(self, id):
+        stations = self.active_stations_with_bikes
+        stations = [s for s in stations if s.id == id]
+        return stations[0] if stations else None
+
 
 def normalize(name):
     """Normalize spanish addresses for searching"""

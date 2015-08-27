@@ -45,14 +45,27 @@ def process_message(update_id, message, telegram, bicimad):
                         'Pon "/bici Sol", por poner un ejemplo, '\
                         'o comparte tu posición, y terminamos antes.'
                 else:
-                    stations = bicimad.stations\
-                        .active_stations_with_bikes_by_name(arguments[0])
-                    if not stations:
-                        response = 'Uhh no me suena esa dirección para '\
-                            'ninguna estación. Afina un poco más.'
+                    if to_int(arguments[0]):
+                        sid = to_int(arguments[0])
+                        station = bicimad.stations\
+                            .active_stations_with_bikes_by_id(sid)
+                        if station is None:
+                            response = 'Mmmm, no hay ninguna estación '\
+                                'con id {}. Prueba con el nombre.'.format(sid)
+                        else:
+                            response = 'La estación con id {} '\
+                                'es la que está en {}:\n\n{}'\
+                                .format(sid, station.direccion,
+                                        format_station(station))
                     else:
-                        response = 'Pues puede que sea alguna de estas:\n\n'\
-                            + '\n'.join(map(format_station, stations))
+                        stations = bicimad.stations\
+                            .active_stations_with_bikes_by_name(arguments[0])
+                        if not stations:
+                            response = 'Uhh no me suena esa dirección para '\
+                                'ninguna estación. Afina un poco más.'
+                        else:
+                            response = 'Pues puede que sea alguna de estas:\n\n'\
+                                + '\n'.join(map(format_station, stations))
 
             elif command in ('/plaza', '/estacion'):
                 response = "Estos comandos funcionarán próximamente"

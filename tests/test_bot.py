@@ -105,6 +105,20 @@ class TestProcessCommand(ProcessMessage):
             contains_string(STATIONS[1].direccion)
         ))
 
+    def test_it_should_answer_bici_searching_by_id(self):
+        self.bicimad.stations.active_stations_with_bikes_by_id.return_value = STATIONS[0]
+
+        self.process(message('/bici  1'))
+
+        self.assert_answer(contains_string(STATIONS[0].direccion))
+
+    def test_it_should_answer_bici_by_id_with_no_results_message(self):
+        self.bicimad.stations.active_stations_with_bikes_by_id.return_value = None
+
+        self.process(message('/bici  9999'))
+
+        self.assert_answer(contains_string('ninguna estación'))
+
     def test_it_should_process_plaza_command(self):
         self.process(message('/plaza'))
 

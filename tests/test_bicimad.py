@@ -7,7 +7,7 @@ from bicimad.bicimad import BiciMad, DEFAULT_URL, ENDPOINT, Stations
 import httpretty
 from hamcrest import (assert_that, has_property, has_entry, is_, has_entries,
                       has_length, only_contains, greater_than, has_properties,
-                      all_of)
+                      all_of, none)
 
 
 def load_json(path):
@@ -119,6 +119,21 @@ class TestStations:
                 unavailable=is_(0),
             )))
         ))
+
+    def test_it_should_search_stations_by_id(self):
+        station = self.stations.active_stations_with_bikes_by_id(1)
+
+        assert_that(station, has_properties(dict(
+            id=1,
+            bikes=greater_than(0),
+            active=is_(1),
+            unavailable=is_(0),
+        )))
+
+    def test_it_should_give_none_when_station_not_found_by_id(self):
+        station = self.stations.active_stations_with_bikes_by_id(9999)
+
+        assert_that(station, is_(none()))
 
     def setup(self):
         self.stations = Stations.from_response(RESPONSE)
