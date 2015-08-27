@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+import re
 import operator
+import unidecode
 
 import requests
 from geopy.distance import vincenty
@@ -83,6 +85,35 @@ class Stations:
         stations = self.active_stations_with_bikes
         stations = self.calculate_distances(stations, position)
         return sorted(stations, key=operator.attrgetter('distance'))[:max]
+
+    def active_stations_with_bikes_by_name(self, name, max=5):
+        def search():
+            query = normalize(name)
+            for station in self.active_stations_with_bikes:
+                station.index = normalize(station.direccion)
+                if query in station.index:
+                    yield station
+
+        return sorted(search(), key=operator.attrgetter('index'))[:max]
+
+
+def normalize(name):
+    """Normalize spanish addresses for searching"""
+    return _NORMALIZE_RE.sub('', unidecode.unidecode(name).lower()).strip()
+
+
+# Normalize spanish addresses
+_NORMALIZE_RE = re.compile(r"""
+(plaza)         # plazas y plazuelas
+|(plazuela)
+|(calle)        # calles y avenidas
+|(c/)
+|(av/)
+|(avda\.)
+|(\ no\ \d+)    # números
+|(\d+)
+|([-,()])       # caracteres especiales
+""", re.VERBOSE)
 
 
 class BiciMad:

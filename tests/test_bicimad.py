@@ -107,5 +107,18 @@ class TestStations:
             )))
         ))
 
+    def test_it_should_search_stations_by_name(self):
+        name = 'callElaVapié'
+        stations = list(self.stations.active_stations_with_bikes_by_name(name))
+
+        assert_that(stations, all_of(
+            has_length(1),
+            only_contains(has_properties(dict(
+                bikes=greater_than(0),
+                active=is_(1),
+                unavailable=is_(0),
+            )))
+        ))
+
     def setup(self):
         self.stations = Stations.from_response(RESPONSE)

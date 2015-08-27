@@ -33,12 +33,28 @@ def process_message(update_id, message, telegram, bicimad):
     if text:
         if text.startswith('/'):
             command = text.split(' ', 1)[0]
+            arguments = text.split(' ', 1)[1:]
             if command == '/start':
                 response = "¡Hola! Puedo echarte un cable para encontrar \
                     una bicicleta. Comparte conmigo tu posición y te diré \
                     las que tienes más cerca"
 
-            elif command in ('/bici', '/plaza', '/estacion'):
+            elif command == '/bici':
+                if not arguments or not arguments[0].strip():
+                    response = 'No me has dicho por qué buscar. '\
+                        'Pon "/bici Sol", por poner un ejemplo, '\
+                        'o comparte tu posición, y terminamos antes.'
+                else:
+                    stations = bicimad.stations\
+                        .active_stations_with_bikes_by_name(arguments[0])
+                    if not stations:
+                        response = 'Uhh no me suena esa dirección para '\
+                            'ninguna estación. Afina un poco más.'
+                    else:
+                        response = 'Pues puede que sea alguna de estas:\n\n'\
+                            + '\n'.join(map(format_station, stations))
+
+            elif command in ('/plaza', '/estacion'):
                 response = "Estos comandos funcionarán próximamente"
             else:
                 response = "No reconozco esa orden"

@@ -68,6 +68,7 @@ class ProcessMessage:
 
     def setup_mocks(self):
         self.bicimad = Mock(BiciMad)
+        self.bicimad.stations = Mock(Stations)
         self.telegram = Mock(Telegram)
 
     def assert_answer(self, matcher):
@@ -81,10 +82,28 @@ class TestProcessCommand(ProcessMessage):
 
         self.assert_answer(contains_string('¡Hola!'))
 
-    def test_it_should_process_bici_command(self):
-        self.process(message('/bici'))
+    def test_it_should_check_bici_arguments(self):
+        self.process(message('/bici  \n'))
 
-        self.assert_answer(self.command_not_implemented)
+        self.assert_answer(contains_string('No me has dicho'))
+
+    def test_it_should_answer_bici_with_no_results_message(self):
+        self.bicimad.stations.active_stations_with_bikes_by_name.return_value = []
+
+        self.process(message('/bici  wwww'))
+
+        self.assert_answer(contains_string('no me suena'))
+
+    def test_it_should_answer_bici_with_results(self):
+        self.bicimad.stations.active_stations_with_bikes_by_name.return_value = STATIONS
+
+        self.process(message('/bici  wwww'))
+
+        self.assert_answer(all_of(
+            contains_string('puede que sea alguna de estas'),
+            contains_string(STATIONS[0].direccion),
+            contains_string(STATIONS[1].direccion)
+        ))
 
     def test_it_should_process_plaza_command(self):
         self.process(message('/plaza'))

@@ -2,3 +2,4 @@ click
 geopy
 bottle
 requests
+unidecode
