@@ -2,11 +2,12 @@ import os
 import json as stdjson
 
 from bicimad.helpers import urljoin
-from bicimad.bicimad import BiciMad, DEFAULT_URL, ENDPOINT
+from bicimad.bicimad import BiciMad, DEFAULT_URL, ENDPOINT, Stations
 
 import httpretty
 from hamcrest import (assert_that, has_property, has_entry, is_, has_entries,
-                      has_length)
+                      has_length, only_contains, greater_than, has_properties,
+                      all_of)
 
 
 def load_json(path):
@@ -19,6 +20,7 @@ ID_AUTH = '203a98b42df039094dfff2043'
 ID_SECURITY = '3a98b42df039094dfff2043f039094dfff2043'
 HERE = os.path.abspath(os.path.dirname(__file__))
 RESPONSE = load_json(os.path.join(HERE, '../examples/bicimad-response.json'))
+N_STATIONS = len(RESPONSE['estaciones'])
 
 
 class TestBiciMad:
@@ -55,8 +57,7 @@ class TestBiciMad:
 
         stations = self.bicimad.stations
 
-        assert_that(list(stations.stations),
-                    has_length(len(RESPONSE['estaciones'])))
+        assert_that(list(stations.stations), has_length(N_STATIONS))
 
     def register(self, json):
         httpretty.register_uri(
@@ -72,3 +73,39 @@ class TestBiciMad:
             'bicimad.auth': ID_AUTH,
             'bicimad.security': ID_SECURITY
         })
+
+
+class TestStations:
+    def test_it_should_parse_stations(self):
+        stations = list(self.stations.stations)
+
+        assert_that(stations, has_length(N_STATIONS))
+
+    def test_it_should_get_bikes(self):
+        stations = list(self.stations.active_stations_with_bikes)
+
+        assert_that(stations, all_of(
+            has_length(greater_than(0)),
+            only_contains(has_properties(dict(
+                bikes=greater_than(0),
+                active=is_(1),
+                unavailable=is_(0),
+            )))
+        ))
+
+    def test_it_should_get_closest_bikes(self):
+        position = (40.4168984, -3.7024244)
+        stations = list(self.stations.nearest_active_stations_with_bikes(position))
+
+        assert_that(stations, all_of(
+            has_length(greater_than(0)),
+            only_contains(has_properties(dict(
+                bikes=greater_than(0),
+                active=is_(1),
+                unavailable=is_(0),
+                distance=greater_than(0)
+            )))
+        ))
+
+    def setup(self):
+        self.stations = Stations.from_response(RESPONSE)

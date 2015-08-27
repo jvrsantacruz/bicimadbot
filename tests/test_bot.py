@@ -118,8 +118,6 @@ class TestProcessLocation(ProcessMessage):
 
     def setup(self):
         self.setup_mocks()
-
-        self.bicimad.stations = Mock(Stations)
         self.bicimad.stations\
             .nearest_active_stations_with_bikes\
             .return_value = STATIONS
