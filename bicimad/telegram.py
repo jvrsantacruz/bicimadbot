@@ -69,10 +69,12 @@ def process_message(update_id, message, telegram, bicimad):
 
             elif command == '/help':
                 response = 'Puedo ayudarte a encontrar una bici si me '\
-                    'preguntas con cariño.\nPuedes buscar una estación '\
-                    'en concreto buscando por nombre, por ej: "/bici atocha"\n'\
-                    'pero es mucho más rápido darle a "compartir posición" y te'\
-                    'diré todas las que tienes alrededor.'
+                    'preguntas con cariño.\n\n'\
+                    '* Puedes buscar una estación buscando por nombre '\
+                    'por ej: "/bici atocha"\n'\
+                    '* Es mucho más rápido darle a "compartir posición" y te '\
+                    'diré todas las que tienes alrededor.\n\n'\
+                    'Vamos poco a poco añadiendo más posibilidades :)'
 
             elif command in ('/plaza', '/estacion'):
                 response = "Estos comandos funcionarán próximamente"
