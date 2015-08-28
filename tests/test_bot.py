@@ -129,6 +129,11 @@ class TestProcessCommand(ProcessMessage):
 
         self.assert_answer(self.command_not_implemented)
 
+    def test_it_should_process_help_command(self):
+        self.process(message('/help'))
+
+        self.assert_answer(contains_string('Puedo ayudarte a encontrar una bici'))
+
     command_not_implemented = contains_string(
         'Estos comandos funcionarán próximamente')
 
