@@ -60,6 +60,71 @@ class Station:
         return geo_distance(self.position, position)
 
 
+def active(stations):
+    """Active and not unavailable stations"""
+    return (s for s in stations if s.active and not s.unavailable)
+
+
+def with_bikes(stations):
+    """With available bikes"""
+    return (s for s in stations if s.bikes)
+
+
+def distance(position):
+    """Ordered by distance to a point
+
+    Adds a `distance` property to each station relative to `position`.
+
+    :param position: (lat, long)
+    """
+    def calculate_distances(stations):
+        for station in stations:
+            station.distance = station.distance_to(position)
+            yield station
+
+    return calculate_distances
+
+
+def search(field, value):
+    """Search by name/address field
+Adds a `index` property with a normalized search string.
+    Filters stations matching the search value.
+    """
+    def search(stations):
+        query = normalize(value)
+        for station in stations:
+            station.index = normalize(getattr(station, field))
+            if query in station.index:
+                yield station
+
+    return search
+
+
+def find(field, value):
+    """Find one by the exact value or return None"""
+    def filter(stations):
+        for station in stations:
+            if getattr(station, field) == value:
+                return station
+
+    return filter
+
+
+def sort(field):
+    def filter(stations):
+        return sorted(stations, key=operator.attrgetter(field))
+    return filter
+
+
+def query(*filters):
+    def filter_all(stations):
+        for filter in filters:
+            stations = filter(stations)
+        return stations
+
+    return filter_all
+
+
 class Stations:
     def __init__(self, stations):
         self.stations = map(Station, stations)
@@ -68,38 +133,21 @@ class Stations:
     def from_response(cls, response):
         return cls(response['estaciones'])
 
-    @property
-    def active_stations(self):
-        return (s for s in self.stations if s.active and not s.unavailable)
+    def query(self, *filters, **kwargs):
+        max = kwargs.get('max')
+        result = query(*filters)(self.stations)
+        return result[:max] if max is not None else result
 
-    @property
-    def active_stations_with_bikes(self):
-        return (s for s in self.active_stations if s.bikes)
+    def with_bikes_by_distance(self, position, max=5):
+        return self.query(active, with_bikes,
+                          distance(position), sort('distance'), max=max)
 
-    def calculate_distances(self, stations, position):
-        for station in stations:
-            station.distance = station.distance_to(position)
-            yield station
+    def with_bikes_by_address(self, name, max=5):
+        return self.query(active, with_bikes,
+                          search('direccion', name), sort('index'), max=max)
 
-    def nearest_active_stations_with_bikes(self, position, max=5):
-        stations = self.active_stations_with_bikes
-        stations = self.calculate_distances(stations, position)
-        return sorted(stations, key=operator.attrgetter('distance'))[:max]
-
-    def active_stations_with_bikes_by_name(self, name, max=5):
-        def search():
-            query = normalize(name)
-            for station in self.active_stations_with_bikes:
-                station.index = normalize(station.direccion)
-                if query in station.index:
-                    yield station
-
-        return sorted(search(), key=operator.attrgetter('index'))[:max]
-
-    def active_stations_with_bikes_by_id(self, id):
-        stations = self.active_stations_with_bikes
-        stations = [s for s in stations if s.id == id]
-        return stations[0] if stations else None
+    def with_bikes_by_id(self, id):
+        return self.query(active, with_bikes, find('id', id))
 
 
 def normalize(name):

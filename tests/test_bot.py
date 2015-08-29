@@ -88,14 +88,14 @@ class TestProcessCommand(ProcessMessage):
         self.assert_answer(contains_string('No me has dicho'))
 
     def test_it_should_answer_bici_with_no_results_message(self):
-        self.bicimad.stations.active_stations_with_bikes_by_name.return_value = []
+        self.bicimad.stations.with_bikes_by_address.return_value = []
 
         self.process(message('/bici  wwww'))
 
         self.assert_answer(contains_string('no me suena'))
 
     def test_it_should_answer_bici_with_results(self):
-        self.bicimad.stations.active_stations_with_bikes_by_name.return_value = STATIONS
+        self.bicimad.stations.with_bikes_by_address.return_value = STATIONS
 
         self.process(message('/bici  wwww'))
 
@@ -106,14 +106,14 @@ class TestProcessCommand(ProcessMessage):
         ))
 
     def test_it_should_answer_bici_searching_by_id(self):
-        self.bicimad.stations.active_stations_with_bikes_by_id.return_value = STATIONS[0]
+        self.bicimad.stations.with_bikes_by_id.return_value = STATIONS[0]
 
         self.process(message('/bici  1'))
 
         self.assert_answer(contains_string(STATIONS[0].direccion))
 
     def test_it_should_answer_bici_by_id_with_no_results_message(self):
-        self.bicimad.stations.active_stations_with_bikes_by_id.return_value = None
+        self.bicimad.stations.with_bikes_by_id.return_value = None
 
         self.process(message('/bici  9999'))
 
@@ -143,7 +143,7 @@ class TestProcessLocation(ProcessMessage):
         self.process(MSG_LOCATION)
 
         self.bicimad.stations.\
-            nearest_active_stations_with_bikes.\
+            with_bikes_by_distance.\
             assert_called_once_with(LOCATION)
 
     def test_it_should_answer_with_bikes_message(self):
@@ -157,5 +157,5 @@ class TestProcessLocation(ProcessMessage):
     def setup(self):
         self.setup_mocks()
         self.bicimad.stations\
-            .nearest_active_stations_with_bikes\
+            .with_bikes_by_distance\
             .return_value = STATIONS

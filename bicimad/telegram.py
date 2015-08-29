@@ -48,7 +48,7 @@ def process_message(update_id, message, telegram, bicimad):
                     if to_int(arguments[0]):
                         sid = to_int(arguments[0])
                         station = bicimad.stations\
-                            .active_stations_with_bikes_by_id(sid)
+                            .with_bikes_by_id(sid)
                         if station is None:
                             response = 'Mmmm, no hay ninguna estación '\
                                 'con id {}. Prueba con el nombre.'.format(sid)
@@ -59,7 +59,7 @@ def process_message(update_id, message, telegram, bicimad):
                                         format_station(station))
                     else:
                         stations = bicimad.stations\
-                            .active_stations_with_bikes_by_name(arguments[0])
+                            .with_bikes_by_address(arguments[0])
                         if not stations:
                             response = 'Uhh no me suena esa dirección para '\
                                 'ninguna estación. Afina un poco más.'
@@ -94,7 +94,7 @@ def process_message(update_id, message, telegram, bicimad):
         log.info(u'(update: %d chat: %d) Got location from %s: lat: %f long: %f',
                     update_id, chat_id, repr_user(user), lat, long)
 
-        stations = bicimad.stations.nearest_active_stations_with_bikes((lat, long))
+        stations = bicimad.stations.with_bikes_by_distance((lat, long))
         message = ('Las bicis que te pillan más cerca son:\n\n'
                    + '\n'.join(map(format_station, stations)))
         telegram.send_message(chat_id, message)
