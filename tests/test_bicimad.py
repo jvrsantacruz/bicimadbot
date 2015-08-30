@@ -89,8 +89,8 @@ class TestStations:
         ))
 
     def test_it_should_search_stations_by_name(self):
-        name = 'callElaVapié'
-        stations = list(self.stations.with_bikes_by_address(name))
+        query = 'callElaVapié'
+        stations = list(self.stations.with_bikes_by_search(query))
 
         assert_that(stations, all_of(
             has_length(1),

@@ -59,7 +59,7 @@ def process_message(update_id, message, telegram, bicimad):
                                         format_station(station))
                     else:
                         stations = bicimad.stations\
-                            .with_bikes_by_address(arguments[0])
+                            .with_bikes_by_search(arguments[0])
                         if not stations:
                             response = 'Uhh no me suena esa dirección para '\
                                 'ninguna estación. Afina un poco más.'

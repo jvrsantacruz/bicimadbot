@@ -93,3 +93,21 @@ NO_BIKES_STATION = {
     "bases_libres":"24",
     "porcentaje":100
 }
+
+
+# Different name and address
+NAME_AND_ADDRESS_STATION = {
+    "idestacion":"135",
+    "nombre":"Entrada Matadero",
+    "numero_estacion":"165",
+    "direccion":"Paseo de la Chopera 14",
+    "latitud":"40.3919385",
+    "longitud":"-3.6971829",
+    "activo":"1",
+    "luz":"2",
+    "no_disponible":"0",
+    "numero_bases":"24",
+    "bicis_enganchadas":"8",
+    "bases_libres":"12",
+    "porcentaje":50
+}

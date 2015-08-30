@@ -85,15 +85,47 @@ def distance(position):
     return calculate_distances
 
 
-def search(field, value):
+def make_getter(*fields):
+    """Build getter that always returns a tuple of values
+
+    operator.attrgetter returns the value with one field instead of a tuple.
+    """
+    getter = operator.attrgetter(*fields)
+
+    # assure always returns a tuple
+    if len(fields) == 1:
+        def single_getter(value):
+            return (getter(value),)
+        return single_getter
+
+    return getter
+
+
+def index(*fields):
+    """Indexes station fields for latter search
+
+    Adds a `index` property to each station with resumed search data.
+
+    :param \*fields: Field names to add to the index
+    """
+    def indexer(stations):
+        getter = make_getter(*fields)
+        for station in stations:
+            station.index = normalize(' '.join(getter(station)))
+            yield station
+
+    return indexer
+
+
+def search(value):
     """Search by name/address field
-Adds a `index` property with a normalized search string.
+
+    Expects a `index` property with a normalized search string.
     Filters stations matching the search value.
     """
     def search(stations):
         query = normalize(value)
         for station in stations:
-            station.index = normalize(getattr(station, field))
             if query in station.index:
                 yield station
 
@@ -142,9 +174,9 @@ class Stations:
         return self.query(active, with_bikes,
                           distance(position), sort('distance'), max=max)
 
-    def with_bikes_by_address(self, name, max=5):
-        return self.query(active, with_bikes,
-                          search('direccion', name), sort('index'), max=max)
+    def with_bikes_by_search(self, name, max=5):
+        return self.query(active, with_bikes, index('nombre', 'direccion'),
+                          search(name), sort('index'), max=max)
 
     def with_bikes_by_id(self, id):
         return self.query(active, with_bikes, find('id', id))

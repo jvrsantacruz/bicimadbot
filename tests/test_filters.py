@@ -1,12 +1,13 @@
 from .stations import (AVAILABLE_STATION, FIRST_STATION, UNAVAILABLE_STATION,
-                       NO_ACTIVE_STATION, NO_BIKES_STATION)
+                       NO_ACTIVE_STATION, NO_BIKES_STATION,
+                       NAME_AND_ADDRESS_STATION)
 
-from hamcrest import (assert_that, has_property, is_,
-                      only_contains, greater_than, all_of,
-                      none, instance_of, contains, less_than)
+from hamcrest import (assert_that, has_property, is_, only_contains,
+                      greater_than, all_of, none, contains, less_than,
+                      contains_string)
 
 from bicimad.bicimad import (Station, active, distance, with_bikes, search,
-                             find, sort, query)
+                             find, sort, query, index)
 
 
 class FilterTest:
@@ -55,16 +56,18 @@ class TestDistance(FilterTest):
 class TestSearch(FilterTest):
     def test_it_should_search_by_field(self):
         """Searches by given field"""
-        result = self.filter(search('direccion', 'Plaza Santa Ana'),
-                             (AVAILABLE_STATION, NO_BIKES_STATION))
+        filter = query(index('direccion'), search('Plaza Santa Ana'))
+
+        result = self.filter(filter, (AVAILABLE_STATION, NO_BIKES_STATION))
 
         assert_that(result, contains(
             has_property('idestacion', AVAILABLE_STATION['idestacion'])))
 
     def test_it_should_sanitize_search_terms(self):
         """Removes street terms from search terms"""
-        result = self.filter(search('direccion', 'Calle Santa Ana'),
-                             (AVAILABLE_STATION, NO_BIKES_STATION))
+        filter = query(index('direccion'), search('Plaza Santa Ana'))
+
+        result = self.filter(filter, (AVAILABLE_STATION, NO_BIKES_STATION))
 
         assert_that(result, contains(
             has_property('idestacion', AVAILABLE_STATION['idestacion'])))
@@ -113,4 +116,21 @@ class TestQuery(FilterTest):
             has_property('mark', 2),
             has_property('marked_by_1', True),
             has_property('marked_by_2', True),
+        )))
+
+
+class TestIndex(FilterTest):
+    def test_it_should_create_a_index_property(self):
+        result = self.filter(index('nombre', 'direccion'),
+                            (FIRST_STATION, AVAILABLE_STATION))
+
+        assert_that(result, only_contains(has_property('index')))
+
+    def test_it_should_create_an_index_using_station_data(self):
+        result = self.filter(index('nombre', 'direccion'),
+                            (NAME_AND_ADDRESS_STATION,))
+
+        assert_that(result, contains(has_property('index', all_of(
+            contains_string('matadero'),
+            contains_string('chopera'))
         )))

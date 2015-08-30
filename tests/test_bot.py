@@ -88,14 +88,14 @@ class TestProcessCommand(ProcessMessage):
         self.assert_answer(contains_string('No me has dicho'))
 
     def test_it_should_answer_bici_with_no_results_message(self):
-        self.bicimad.stations.with_bikes_by_address.return_value = []
+        self.bicimad.stations.with_bikes_by_search.return_value = []
 
         self.process(message('/bici  wwww'))
 
         self.assert_answer(contains_string('no me suena'))
 
     def test_it_should_answer_bici_with_results(self):
-        self.bicimad.stations.with_bikes_by_address.return_value = STATIONS
+        self.bicimad.stations.with_bikes_by_search.return_value = STATIONS
 
         self.process(message('/bici  wwww'))
 
