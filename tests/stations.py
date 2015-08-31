@@ -95,6 +95,24 @@ NO_BIKES_STATION = {
 }
 
 
+NO_SPACES_STATION = {
+    "idestacion":"98",
+    "nombre":"Goya Colon",
+    "numero_estacion":"93",
+    "direccion":"NO OPERATIVA",
+    "latitud":"40.4257046",
+    "longitud":"-3.6893698",
+    "activo":"1",
+    "luz": 2,
+    "no_disponible" :"0",
+    "numero_bases":"24",
+    "bicis_enganchadas":"0",
+    "bases_libres":"0",
+    "porcentaje":0
+}
+
+
+
 # Different name and address
 NAME_AND_ADDRESS_STATION = {
     "idestacion":"135",

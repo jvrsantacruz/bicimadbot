@@ -88,7 +88,7 @@ class TestStations:
             )))
         ))
 
-    def test_it_should_search_stations_by_name(self):
+    def test_it_should_search_stations_with_bikes_by_name(self):
         query = 'callElaVapié'
         stations = list(self.stations.with_bikes_by_search(query))
 
@@ -101,7 +101,7 @@ class TestStations:
             )))
         ))
 
-    def test_it_should_search_stations_by_id(self):
+    def test_it_should_search_stations_with_bikes_by_id(self):
         station = self.stations.with_bikes_by_id(1)
 
         assert_that(station, has_properties(dict(
@@ -111,8 +111,50 @@ class TestStations:
             unavailable=is_(0),
         )))
 
-    def test_it_should_give_none_when_station_not_found_by_id(self):
+    def test_it_should_give_none_when_station_with_bikes_not_found_by_id(self):
         station = self.stations.with_bikes_by_id(9999)
+
+        assert_that(station, is_(none()))
+
+    def test_it_should_get_closest_spaces(self):
+        position = (40.4168984, -3.7024244)
+        stations = list(self.stations.with_spaces_by_distance(position))
+
+        assert_that(stations, all_of(
+            has_length(greater_than(0)),
+            only_contains(has_properties(dict(
+                spaces=greater_than(0),
+                active=is_(1),
+                unavailable=is_(0),
+                distance=greater_than(0)
+            )))
+        ))
+
+    def test_it_should_search_stations_with_spaces_by_name(self):
+        query = 'callElaVapié'
+        stations = list(self.stations.with_spaces_by_search(query))
+
+        assert_that(stations, all_of(
+            has_length(1),
+            only_contains(has_properties(dict(
+                spaces=greater_than(0),
+                active=is_(1),
+                unavailable=is_(0),
+            )))
+        ))
+
+    def test_it_should_search_stations_with_spaces_by_id(self):
+        station = self.stations.with_spaces_by_id(1)
+
+        assert_that(station, has_properties(dict(
+            id=1,
+            spaces=greater_than(0),
+            active=is_(1),
+            unavailable=is_(0),
+        )))
+
+    def test_it_should_give_none_when_station_with_spaces_not_found_by_id(self):
+        station = self.stations.with_spaces_by_id(9999)
 
         assert_that(station, is_(none()))
 

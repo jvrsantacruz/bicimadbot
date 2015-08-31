@@ -51,6 +51,7 @@ class Station:
             setattr(self, key, value)
 
         self.id = int(self.idestacion)
+        self.spaces = int(self.bases_libres)
         self.bikes = int(self.bicis_enganchadas)
         self.active = int(self.activo)
         self.unavailable = int(self.no_disponible)
@@ -68,6 +69,11 @@ def active(stations):
 def with_bikes(stations):
     """With available bikes"""
     return (s for s in stations if s.bikes)
+
+
+def with_spaces(stations):
+    """With free spaces"""
+    return (s for s in stations if s.spaces)
 
 
 def distance(position):
@@ -174,12 +180,23 @@ class Stations:
         return self.query(active, with_bikes,
                           distance(position), sort('distance'), max=max)
 
-    def with_bikes_by_search(self, name, max=5):
+    def with_bikes_by_search(self, query, max=5):
         return self.query(active, with_bikes, index('nombre', 'direccion'),
-                          search(name), sort('index'), max=max)
+                          search(query), sort('index'), max=max)
 
     def with_bikes_by_id(self, id):
         return self.query(active, with_bikes, find('id', id))
+
+    def with_spaces_by_distance(self, position, max=5):
+        return self.query(active, with_spaces,
+                          distance(position), sort('distance'), max=max)
+
+    def with_spaces_by_search(self, query, max=5):
+        return self.query(active, with_spaces, index('nombre', 'direccion'),
+                          search(query), sort('index'), max=max)
+
+    def with_spaces_by_id(self, id):
+        return self.query(active, with_spaces, find('id', id))
 
 
 def normalize(name):

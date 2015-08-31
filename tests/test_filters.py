@@ -1,5 +1,5 @@
 from .stations import (AVAILABLE_STATION, FIRST_STATION, UNAVAILABLE_STATION,
-                       NO_ACTIVE_STATION, NO_BIKES_STATION,
+                       NO_ACTIVE_STATION, NO_BIKES_STATION, NO_SPACES_STATION,
                        NAME_AND_ADDRESS_STATION)
 
 from hamcrest import (assert_that, has_property, is_, only_contains,
@@ -7,7 +7,7 @@ from hamcrest import (assert_that, has_property, is_, only_contains,
                       contains_string)
 
 from bicimad.bicimad import (Station, active, distance, with_bikes, search,
-                             find, sort, query, index)
+                             find, sort, query, index, with_spaces)
 
 
 class FilterTest:
@@ -35,6 +35,14 @@ class TestActive(FilterTest):
 class TestWithBikes(FilterTest):
     def test_it_should_filter_stations_with_no_bikes(self):
         result = self.filter(with_bikes, (AVAILABLE_STATION, NO_BIKES_STATION))
+
+        assert_that(result, only_contains(
+            has_property('idestacion', AVAILABLE_STATION['idestacion'])))
+
+
+class TestWithSpaces(FilterTest):
+    def test_it_should_filter_stations_with_no_spaces(self):
+        result = self.filter(with_spaces, (AVAILABLE_STATION, NO_SPACES_STATION))
 
         assert_that(result, only_contains(
             has_property('idestacion', AVAILABLE_STATION['idestacion'])))

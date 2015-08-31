@@ -34,11 +34,14 @@ def process_message(update_id, message, telegram, bicimad):
         if text.startswith('/'):
             command = text.split(' ', 1)[0]
             arguments = text.split(' ', 1)[1:]
+
+            # start command
             if command == '/start':
                 response = "¡Hola! Puedo echarte un cable para encontrar \
                     una bicicleta. Comparte conmigo tu posición y te diré \
                     las que tienes más cerca"
 
+            # bici command
             elif command == '/bici':
                 if not arguments or not arguments[0].strip():
                     response = 'No me has dicho por qué buscar. '\
@@ -67,6 +70,36 @@ def process_message(update_id, message, telegram, bicimad):
                             response = 'Pues puede que sea alguna de estas:\n\n'\
                                 + '\n'.join(map(format_station, stations))
 
+            # plaza command
+            elif command == '/plaza':
+                if not arguments or not arguments[0].strip():
+                    response = 'No me has dicho por qué buscar. '\
+                        'Pon "/bici Sol", por poner un ejemplo, '\
+                        'o comparte tu posición, y terminamos antes.'
+                else:
+                    if to_int(arguments[0]):
+                        sid = to_int(arguments[0])
+                        station = bicimad.stations\
+                            .with_spaces_by_id(sid)
+                        if station is None:
+                            response = 'Mmmm, no hay ninguna estación '\
+                                'con id {}. Prueba con el nombre.'.format(sid)
+                        else:
+                            response = 'La estación con id {} '\
+                                'es la que está en {}:\n\n{}'\
+                                .format(sid, station.direccion,
+                                        format_station(station))
+                    else:
+                        stations = bicimad.stations\
+                            .with_spaces_by_search(arguments[0])
+                        if not stations:
+                            response = 'Uhh no me suena esa dirección para '\
+                                'ninguna estación. Afina un poco más.'
+                        else:
+                            response = 'Pues puede que sea alguna de estas:\n\n'\
+                                + '\n'.join(map(format_station, stations))
+
+            # help command
             elif command == '/help':
                 response = 'Puedo ayudarte a encontrar una bici si me '\
                     'preguntas con cariño.\n\n'\
@@ -76,8 +109,11 @@ def process_message(update_id, message, telegram, bicimad):
                     'diré todas las que tienes alrededor.\n\n'\
                     'Vamos poco a poco añadiendo más posibilidades :)'
 
-            elif command in ('/plaza', '/estacion'):
+            # estacion command
+            elif command == '/estacion':
                 response = "Estos comandos funcionarán próximamente"
+
+            # unknown command
             else:
                 response = "No reconozco esa orden"
 

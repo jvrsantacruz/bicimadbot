@@ -76,25 +76,36 @@ class ProcessMessage:
                     contains(CHAT_ID, matcher))
 
 
-class TestProcessCommand(ProcessMessage):
+class TestStartCommand(ProcessMessage):
+    """/start command"""
     def test_it_should_process_start_command(self):
         self.process(message('/start'))
 
         self.assert_answer(contains_string('¡Hola!'))
 
-    def test_it_should_check_bici_arguments(self):
+
+class TestHelpCommand(ProcessMessage):
+    """/help command"""
+    def test_it_should_process_help_command(self):
+        self.process(message('/help'))
+
+        self.assert_answer(contains_string('Puedo ayudarte a encontrar una bici'))
+
+
+class TestBiciCommand(ProcessMessage):
+    def test_it_should_check_arguments(self):
         self.process(message('/bici  \n'))
 
         self.assert_answer(contains_string('No me has dicho'))
 
-    def test_it_should_answer_bici_with_no_results_message(self):
+    def test_it_should_answer_with_no_results_message(self):
         self.bicimad.stations.with_bikes_by_search.return_value = []
 
         self.process(message('/bici  wwww'))
 
         self.assert_answer(contains_string('no me suena'))
 
-    def test_it_should_answer_bici_with_results(self):
+    def test_it_should_answer_with_results(self):
         self.bicimad.stations.with_bikes_by_search.return_value = STATIONS
 
         self.process(message('/bici  wwww'))
@@ -105,34 +116,65 @@ class TestProcessCommand(ProcessMessage):
             contains_string(STATIONS[1].direccion)
         ))
 
-    def test_it_should_answer_bici_searching_by_id(self):
+    def test_it_should_answer_searching_by_id(self):
         self.bicimad.stations.with_bikes_by_id.return_value = STATIONS[0]
 
         self.process(message('/bici  1'))
 
         self.assert_answer(contains_string(STATIONS[0].direccion))
 
-    def test_it_should_answer_bici_by_id_with_no_results_message(self):
+    def test_it_should_answer_by_id_with_no_results_message(self):
         self.bicimad.stations.with_bikes_by_id.return_value = None
 
         self.process(message('/bici  9999'))
 
         self.assert_answer(contains_string('ninguna estación'))
 
-    def test_it_should_process_plaza_command(self):
-        self.process(message('/plaza'))
 
-        self.assert_answer(self.command_not_implemented)
+class TestPlazaCommand(ProcessMessage):
+    def test_it_should_check_arguments(self):
+        self.process(message('/plaza \n'))
 
+        self.assert_answer(contains_string('No me has dicho'))
+
+    def test_it_should_answer_with_no_results_message(self):
+        self.bicimad.stations.with_spaces_by_search.return_value = []
+
+        self.process(message('/plaza  wwww'))
+
+        self.assert_answer(contains_string('no me suena'))
+
+    def test_it_should_answer_with_results(self):
+        self.bicimad.stations.with_spaces_by_search.return_value = STATIONS
+
+        self.process(message('/plaza  wwww'))
+
+        self.assert_answer(all_of(
+            contains_string('puede que sea alguna de estas'),
+            contains_string(STATIONS[0].direccion),
+            contains_string(STATIONS[1].direccion)
+        ))
+
+    def test_it_should_answer_searching_by_id(self):
+        self.bicimad.stations.with_spaces_by_id.return_value = STATIONS[0]
+
+        self.process(message('/plaza  1'))
+
+        self.assert_answer(contains_string(STATIONS[0].direccion))
+
+    def test_it_should_answer_by_id_with_no_results_message(self):
+        self.bicimad.stations.with_spaces_by_id.return_value = None
+
+        self.process(message('/plaza  9999'))
+
+        self.assert_answer(contains_string('ninguna estación'))
+
+
+class TestEstacionCommand(ProcessMessage):
     def test_it_should_process_estacion_command(self):
         self.process(message('/estacion'))
 
         self.assert_answer(self.command_not_implemented)
-
-    def test_it_should_process_help_command(self):
-        self.process(message('/help'))
-
-        self.assert_answer(contains_string('Puedo ayudarte a encontrar una bici'))
 
     command_not_implemented = contains_string(
         'Estos comandos funcionarán próximamente')
