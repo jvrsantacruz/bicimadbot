@@ -19,7 +19,8 @@ def itemgetter(*fields):
 unpack_message = itemgetter('from', 'chat', 'text', 'location')
 unpack_user = itemgetter('first_name', 'last_name', 'id')
 unpack_location = itemgetter('latitude', 'longitude')
-format_station = '{0.bikes} bicis en {0.direccion} ({0.id})'.format
+format_bikes = '{0.bikes} bicis en {0.direccion} ({0.id})'.format
+format_spaces = '{0.spaces} plazas libres en {0.direccion} ({0.id})'.format
 
 
 def repr_user(user):
@@ -59,7 +60,7 @@ def process_message(update_id, message, telegram, bicimad):
                             response = 'La estación con id {} '\
                                 'es la que está en {}:\n\n{}'\
                                 .format(sid, station.direccion,
-                                        format_station(station))
+                                        format_bikes(station))
                     else:
                         stations = bicimad.stations\
                             .with_bikes_by_search(arguments[0])
@@ -68,7 +69,7 @@ def process_message(update_id, message, telegram, bicimad):
                                 'ninguna estación. Afina un poco más.'
                         else:
                             response = 'Pues puede que sea alguna de estas:\n\n'\
-                                + '\n'.join(map(format_station, stations))
+                                + '\n'.join(map(format_bikes, stations))
 
             # plaza command
             elif command == '/plaza':
@@ -88,7 +89,7 @@ def process_message(update_id, message, telegram, bicimad):
                             response = 'La estación con id {} '\
                                 'es la que está en {}:\n\n{}'\
                                 .format(sid, station.direccion,
-                                        format_station(station))
+                                        format_spaces(station))
                     else:
                         stations = bicimad.stations\
                             .with_spaces_by_search(arguments[0])
@@ -97,7 +98,7 @@ def process_message(update_id, message, telegram, bicimad):
                                 'ninguna estación. Afina un poco más.'
                         else:
                             response = 'Pues puede que sea alguna de estas:\n\n'\
-                                + '\n'.join(map(format_station, stations))
+                                + '\n'.join(map(format_spaces, stations))
 
             # help command
             elif command == '/help':
@@ -132,7 +133,7 @@ def process_message(update_id, message, telegram, bicimad):
 
         stations = bicimad.stations.with_bikes_by_distance((lat, long))
         message = ('Las bicis que te pillan más cerca son:\n\n'
-                   + '\n'.join(map(format_station, stations)))
+                   + '\n'.join(map(format_bikes, stations)))
         telegram.send_message(chat_id, message)
     else:
         log.info(u'(update: %d chat: %d) Unmanaged message from %s: %s',

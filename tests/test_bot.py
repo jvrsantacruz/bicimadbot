@@ -54,8 +54,8 @@ class Obj:
             setattr(self, key, value)
 
 STATIONS = [
-    Obj(id=100, bikes=0, direccion='C/ Dirección A'),
-    Obj(id=101, bikes=1, direccion='C/ Dirección B'),
+    Obj(id=100, bikes=0, spaces=0, direccion='C/ Dirección A'),
+    Obj(id=101, bikes=1, spaces=1, direccion='C/ Dirección B'),
 ]
 
 
@@ -112,6 +112,7 @@ class TestBiciCommand(ProcessMessage):
 
         self.assert_answer(all_of(
             contains_string('puede que sea alguna de estas'),
+            contains_string('bicis'),
             contains_string(STATIONS[0].direccion),
             contains_string(STATIONS[1].direccion)
         ))
@@ -151,6 +152,7 @@ class TestPlazaCommand(ProcessMessage):
 
         self.assert_answer(all_of(
             contains_string('puede que sea alguna de estas'),
+            contains_string('plazas libres'),
             contains_string(STATIONS[0].direccion),
             contains_string(STATIONS[1].direccion)
         ))
