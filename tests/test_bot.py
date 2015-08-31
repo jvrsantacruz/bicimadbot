@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from bicimad.telegram import Telegram
+from bicimad.bot import process_message
 from bicimad.bicimad import BiciMad, Stations
-from bicimad.telegram import Telegram, process_message
 
 from unittest.mock import Mock
 from hamcrest import assert_that, contains_string, all_of, contains
