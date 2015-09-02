@@ -1,3 +1,8 @@
+4.1.0  2015-09-02
+-----------------
+
+* Adds disabled or empty stations to search results
+
 4.0.1  2015-08-31
 -----------------
 * Fixes /plaza output which shows available bicis instead of free spaces
