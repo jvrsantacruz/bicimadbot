@@ -55,8 +55,13 @@ class Obj:
             setattr(self, key, value)
 
 STATIONS = [
-    Obj(id=100, bikes=0, spaces=0, direccion='C/ Dirección A'),
-    Obj(id=101, bikes=1, spaces=1, direccion='C/ Dirección B'),
+    Obj(id=100, enabled=True, bikes=0, spaces=0, direccion='C/ Dirección A'),
+    Obj(id=101, enabled=True, bikes=1, spaces=1, direccion='C/ Dirección B'),
+]
+
+BAD_STATIONS = [
+    Obj(id=200, enabled=False, bikes=0, spaces=0, direccion='C/ Dirección W'),
+    Obj(id=201, enabled=False, bikes=1, spaces=1, direccion='C/ Dirección X'),
 ]
 
 
@@ -93,84 +98,91 @@ class TestHelpCommand(ProcessMessage):
         self.assert_answer(contains_string('Puedo ayudarte a encontrar una bici'))
 
 
-class TestBiciCommand(ProcessMessage):
+class SearchCommand(ProcessMessage):
+    command = ''
+    queryname = ''
+
+    def set_result(self, all, good=[]):
+        self.bicimad.stations.by_search.return_value = all
+        function = getattr(self.bicimad.stations, self.queryname)
+        function.return_value = good
+
+    def process_with_args(self, argument):
+        self.process(message('/{} {}'.format(self.command, argument)))
+
     def test_it_should_check_arguments(self):
-        self.process(message('/bici  \n'))
+        self.process_with_args('  \n')
 
         self.assert_answer(contains_string('No me has dicho'))
 
     def test_it_should_answer_with_no_results_message(self):
-        self.bicimad.stations.with_bikes_by_search.return_value = []
+        self.set_result([])
 
-        self.process(message('/bici  wwww'))
+        self.process_with_args('wwwwww')
 
         self.assert_answer(contains_string('no me suena'))
 
-    def test_it_should_answer_with_results(self):
-        self.bicimad.stations.with_bikes_by_search.return_value = STATIONS
+    def test_it_should_answer_only_with_good_results(self):
+        self.set_result(STATIONS, STATIONS)
 
-        self.process(message('/bici  wwww'))
+        self.process_with_args('wwwwww')
 
         self.assert_answer(all_of(
             contains_string('puede que sea alguna de estas'),
-            contains_string('bicis'),
+            contains_string(self.command),
             contains_string(STATIONS[0].direccion),
             contains_string(STATIONS[1].direccion)
         ))
 
-    def test_it_should_answer_searching_by_id(self):
-        self.bicimad.stations.with_bikes_by_id.return_value = STATIONS[0]
+    def test_it_should_answer_with_good_and_bad_results(self):
+        self.set_result(STATIONS + BAD_STATIONS, STATIONS)
 
-        self.process(message('/bici  1'))
-
-        self.assert_answer(contains_string(STATIONS[0].direccion))
-
-    def test_it_should_answer_by_id_with_no_results_message(self):
-        self.bicimad.stations.with_bikes_by_id.return_value = None
-
-        self.process(message('/bici  9999'))
-
-        self.assert_answer(contains_string('ninguna estación'))
-
-
-class TestPlazaCommand(ProcessMessage):
-    def test_it_should_check_arguments(self):
-        self.process(message('/plaza \n'))
-
-        self.assert_answer(contains_string('No me has dicho'))
-
-    def test_it_should_answer_with_no_results_message(self):
-        self.bicimad.stations.with_spaces_by_search.return_value = []
-
-        self.process(message('/plaza  wwww'))
-
-        self.assert_answer(contains_string('no me suena'))
-
-    def test_it_should_answer_with_results(self):
-        self.bicimad.stations.with_spaces_by_search.return_value = STATIONS
-
-        self.process(message('/plaza  wwww'))
+        self.process_with_args('wwwwww')
 
         self.assert_answer(all_of(
             contains_string('puede que sea alguna de estas'),
-            contains_string('plazas libres'),
+            contains_string('Estas me salen pero no creo que te sirvan'),
+            contains_string(self.command),
             contains_string(STATIONS[0].direccion),
-            contains_string(STATIONS[1].direccion)
+            contains_string(STATIONS[1].direccion),
+            contains_string(BAD_STATIONS[0].direccion),
+            contains_string(BAD_STATIONS[1].direccion)
+        ))
+
+    def test_it_should_answer_only_with_bad_results(self):
+        self.set_result(BAD_STATIONS, [])
+
+        self.process_with_args('wwwwww')
+
+        self.assert_answer(all_of(
+            contains_string('Estas me salen pero no creo que te sirvan'),
+            contains_string(BAD_STATIONS[0].direccion),
+            contains_string(BAD_STATIONS[1].direccion)
         ))
 
     def test_it_should_answer_searching_by_id(self):
-        self.bicimad.stations.with_spaces_by_id.return_value = STATIONS[0]
+        self.bicimad.stations.by_id.return_value = STATIONS[0]
 
-        self.process(message('/plaza  1'))
+        self.process_with_args('  1')
 
         self.assert_answer(contains_string(STATIONS[0].direccion))
 
     def test_it_should_answer_by_id_with_no_results_message(self):
-        self.bicimad.stations.with_spaces_by_id.return_value = None
+        self.bicimad.stations.by_id.return_value = None
 
-        self.process(message('/plaza  9999'))
+        self.process_with_args('  9999')
 
         self.assert_answer(contains_string('ninguna estación'))
+
+
+class TestBiciCommand(SearchCommand):
+    command = 'bici'
+    queryname = 'with_bikes'
+
+
+class TestPlazaCommand(SearchCommand):
+    command = 'plaza'
+    queryname = 'with_spaces'
 
 
 class TestEstacionCommand(ProcessMessage):
@@ -180,27 +192,23 @@ class TestEstacionCommand(ProcessMessage):
         self.assert_answer(self.command_not_implemented)
 
     command_not_implemented = contains_string(
-        'Estos comandos funcionarán próximamente')
+        'Este comando funcionará próximamente')
 
 
 class TestProcessLocation(ProcessMessage):
     def test_it_should_query_available_bikes(self):
         self.process(MSG_LOCATION)
 
-        self.bicimad.stations.\
-            with_bikes_by_distance.\
-            assert_called_once_with(LOCATION)
+        self.bicimad.stations.by_distance.assert_called_once_with(LOCATION)
 
-    def test_it_should_answer_with_bikes_message(self):
+    def test_it_should_answer_message(self):
         self.process(MSG_LOCATION)
 
         self.assert_answer(all_of(
-            contains_string('0 bicis en C/ Dirección A (100)'),
-            contains_string('1 bicis en C/ Dirección B (101)')
+            #contains_string('0 bicis en C/ Dirección A (100)'),
+            contains_string('1 bici en C/ Dirección B (101)')
         ))
 
     def setup(self):
         self.setup_mocks()
-        self.bicimad.stations\
-            .with_bikes_by_distance\
-            .return_value = STATIONS
+        self.bicimad.stations.by_distance.return_value = STATIONS

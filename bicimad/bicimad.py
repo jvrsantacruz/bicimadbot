@@ -53,17 +53,24 @@ class Station:
         self.id = int(self.idestacion)
         self.spaces = int(self.bases_libres)
         self.bikes = int(self.bicis_enganchadas)
-        self.active = int(self.activo)
-        self.unavailable = int(self.no_disponible)
+        self.enabled = bool(int(self.activo) and not int(self.no_disponible))
         self.position = float(self.latitud), float(self.longitud)
 
     def distance_to(self, position):
         return geo_distance(self.position, position)
 
+    def __str__(self):
+        enabled = '' if self.enabled else ', disabled'
+        return 'Station({s.id}, {s.nombre}, '\
+            '[{s.bikes}b|{s.spaces}s]{})'.format(enabled, s=self)
 
-def active(stations):
+    def __repr__(self):
+        return str(self)
+
+
+def enabled(stations):
     """Active and not unavailable stations"""
-    return (s for s in stations if s.active and not s.unavailable)
+    return (s for s in stations if s.enabled)
 
 
 def with_bikes(stations):
@@ -173,30 +180,25 @@ class Stations:
 
     def query(self, *filters, **kwargs):
         max = kwargs.get('max')
-        result = query(*filters)(self.stations)
-        return result[:max] if max is not None else result
+        stations = kwargs.get('stations', self.stations)
+        result = query(*filters)(stations)
+        return list(result)[:max] if max is not None else result
 
-    def with_bikes_by_distance(self, position, max=5):
-        return self.query(active, with_bikes,
-                          distance(position), sort('distance'), max=max)
+    def by_id(self, id):
+        return self.query(find('id', id))
 
-    def with_bikes_by_search(self, query, max=5):
-        return self.query(active, with_bikes, index('nombre', 'direccion'),
+    def by_search(self, query, max=5):
+        return self.query(index('nombre', 'direccion'),
                           search(query), sort('index'), max=max)
 
-    def with_bikes_by_id(self, id):
-        return self.query(active, with_bikes, find('id', id))
+    def by_distance(self, position, max=5):
+        return self.query(distance(position), sort('distance'), max=max)
 
-    def with_spaces_by_distance(self, position, max=5):
-        return self.query(active, with_spaces,
-                          distance(position), sort('distance'), max=max)
+    def with_bikes(self, stations, max=5):
+        return self.query(enabled, with_bikes, stations=stations, max=max)
 
-    def with_spaces_by_search(self, query, max=5):
-        return self.query(active, with_spaces, index('nombre', 'direccion'),
-                          search(query), sort('index'), max=max)
-
-    def with_spaces_by_id(self, id):
-        return self.query(active, with_spaces, find('id', id))
+    def with_spaces(self, stations, max=5):
+        return self.query(enabled, with_spaces, stations=stations, max=max)
 
 
 def normalize(name):

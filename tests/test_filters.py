@@ -6,7 +6,7 @@ from hamcrest import (assert_that, has_property, is_, only_contains,
                       greater_than, all_of, none, contains, less_than,
                       contains_string)
 
-from bicimad.bicimad import (Station, active, distance, with_bikes, search,
+from bicimad.bicimad import (Station, enabled, distance, with_bikes, search,
                              find, sort, query, index, with_spaces)
 
 
@@ -18,15 +18,15 @@ class FilterTest:
         return map(Station, specs)
 
 
-class TestActive(FilterTest):
+class TestEnabled(FilterTest):
     def test_it_should_filter_unavailable_stations(self):
-        result = self.filter(active, (AVAILABLE_STATION, UNAVAILABLE_STATION))
+        result = self.filter(enabled, (AVAILABLE_STATION, UNAVAILABLE_STATION))
 
         assert_that(result, only_contains(
             has_property('idestacion', AVAILABLE_STATION['idestacion'])))
 
-    def test_it_should_filter_not_active_stations(self):
-        result = self.filter(active, (AVAILABLE_STATION, NO_ACTIVE_STATION))
+    def test_it_should_filter_not_enabled_stations(self):
+        result = self.filter(enabled, (AVAILABLE_STATION, NO_ACTIVE_STATION))
 
         assert_that(result, only_contains(
             has_property('idestacion', AVAILABLE_STATION['idestacion'])))

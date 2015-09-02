@@ -9,8 +9,37 @@ log = logging.getLogger('bicimad.telegram')
 unpack_message = itemgetter('from', 'chat', 'text', 'location')
 unpack_user = itemgetter('first_name', 'last_name', 'id')
 unpack_location = itemgetter('latitude', 'longitude')
-format_bikes = '{0.bikes} bicis en {0.direccion} ({0.id})'.format
-format_spaces = '{0.spaces} plazas libres en {0.direccion} ({0.id})'.format
+_format_station = '{0.direccion} ({0.id})'.format
+
+
+def _format_base(station, format):
+    if not station.enabled:
+        return 'Estación no disponible en {}'.format(_format_station(station))
+
+    if not station.bikes:
+        return 'Estación vacía en {}'.format(_format_station(station))
+
+    return format(station)
+
+
+def plural(count, singular='', plural='s'):
+    return singular if count == 1 else plural
+
+
+def format_bikes(station):
+    def format(station):
+        return '{} bici{} en {}'.format(
+            station.bikes, plural(station.bikes), _format_station(station))
+
+    return _format_base(station, format)
+
+
+def format_spaces(station):
+    def format(station):
+        return '{} plaza{} en {}'.format(
+            station.bikes, plural(station.spaces), _format_station(station))
+
+    return _format_base(station, format)
 
 
 def repr_user(user):
@@ -32,7 +61,7 @@ def command_start(*args):
         las que tienes más cerca"
 
 
-def make_search_command(name, format, by_id, by_search):
+def make_search_command(name, format, queryname):
     """Builds generic search stations by text/id
 
     It uses different queries and output formatting but the logic and messages
@@ -49,35 +78,48 @@ def make_search_command(name, format, by_id, by_search):
         else:
             if to_int(arguments[0]):
                 sid = to_int(arguments[0])
-                station = getattr(bicimad.stations, by_id)(sid)
+                station = bicimad.stations.by_id(sid)
                 if station is None:
                     response = 'Mmmm, no hay ninguna estación '\
                         'con id {}. Prueba con el nombre.'.format(sid)
                 else:
-                    response = 'La estación con id {} '\
+                    response = 'La estación número {} '\
                         'es la que está en {}:\n\n{}'\
-                        .format(sid, station.direccion,
-                                format_bikes(station))
+                        .format(sid, station.direccion, format(station))
+
             else:
-                stations = getattr(bicimad.stations, by_search)(arguments[0])
+                stations = bicimad.stations.by_search(arguments[0])
                 if not stations:
                     response = 'Uhh no me suena esa dirección para '\
                         'ninguna estación. Afina un poco más.'
                 else:
-                    response = 'Pues puede que sea alguna de estas:\n\n'\
-                        + '\n'.join(map(format, stations))
+                    response = ''
+
+                    good = getattr(bicimad.stations, queryname)(stations)
+                    bad = set(stations) - set(good)
+
+                    # Valid search results
+                    if good:
+                        response += 'Pues puede que sea alguna de estas:\n\n'\
+                            + '\n'.join(map(format, good))
+
+                    # separator
+                    if good and bad:
+                        response += '\n\n'
+
+                    # Valid search results but empty or unavailable
+                    if bad:
+                        response += 'nEstas me salen pero no creo '\
+                            'que te sirvan de mucho:\n\n'\
+                            + '\n'.join(map(format, bad))
 
         return response
 
     return function
 
 
-command_bici = make_search_command(
-    'bici', format_bikes, 'with_bikes_by_id', 'with_bikes_by_search')
-
-
-command_plaza = make_search_command(
-    'plaza', format_spaces, 'with_spaces_by_id', 'with_spaces_by_search')
+command_bici = make_search_command('bici', format_bikes, 'with_bikes')
+command_plaza = make_search_command('plaza', format_spaces, 'with_spaces')
 
 
 def command_help(*args):
@@ -91,7 +133,7 @@ def command_help(*args):
 
 
 def command_estacion(*args):
-    return "Estos comandos funcionarán próximamente"
+    return "Este comando funcionará próximamente"
 
 
 def command_unknown(*args):
@@ -131,7 +173,7 @@ def process_location_message(update_id, chat_id, user, location, telegram, bicim
     log.info(u'(update: %d chat: %d) Got location from %s: lat: %f long: %f',
                 update_id, chat_id, repr_user(user), lat, long)
 
-    stations = bicimad.stations.with_bikes_by_distance((lat, long))
+    stations = bicimad.stations.by_distance((lat, long))
     message = ('Las bicis que te pillan más cerca son:\n\n'
                 + '\n'.join(map(format_bikes, stations)))
     telegram.send_message(chat_id, message)
