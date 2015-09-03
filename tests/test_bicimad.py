@@ -102,7 +102,7 @@ class TestStations:
             )))
         ))
 
-    def test_it_should_search_stations_with_bikes_by_name(self):
+    def test_it_should_search_stations_by_name(self):
         query = 'callEaVapiés'
         stations = list(self.stations.by_search(query))
 
@@ -112,12 +112,12 @@ class TestStations:
         )))
         assert_that(stations, has_length(greater_than(0)))
 
-    def test_it_should_search_stations_with_bikes_by_id(self):
+    def test_it_should_search_stations_by_id(self):
         station = self.stations.by_id(1)
 
         assert_that(station, has_property('id', 1))
 
-    def test_it_should_give_none_when_station_with_bikes_not_found_by_id(self):
+    def test_it_should_give_none_when_station_not_found_by_id(self):
         station = self.stations.by_id(9999)
 
         assert_that(station, is_(none()))

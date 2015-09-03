@@ -37,7 +37,7 @@ def format_bikes(station):
 def format_spaces(station):
     def format(station):
         return '{} plaza{} en {}'.format(
-            station.bikes, plural(station.spaces), _format_station(station))
+            station.spaces, plural(station.spaces), _format_station(station))
 
     return _format_base(station, format)
 
