@@ -109,7 +109,7 @@ def make_search_command(name, format, queryname):
 
                     # Valid search results but empty or unavailable
                     if bad:
-                        response += 'nEstas me salen pero no creo '\
+                        response += 'Estas me salen pero no creo '\
                             'que te sirvan de mucho:\n\n'\
                             + '\n'.join(map(format, bad))
 
