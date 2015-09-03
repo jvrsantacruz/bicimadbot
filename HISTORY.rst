@@ -1,3 +1,8 @@
+4.1.3 (2015-09-03)
+------------------
+
+* Fixes address to avoid showing NO OPERATIVA as address when unavailable
+
 4.1.2 (2015-09-03)
 ------------------
 
