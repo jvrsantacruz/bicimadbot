@@ -70,6 +70,15 @@ class TestBiciMad:
 
 
 class TestStation:
+    def test_it_should_use_name_as_address_when_no_operativa(self):
+        """Bicimad api returns NO OPERATIVA as direccion when station its so"""
+        assert_that(self.active, has_property('address'),
+                    is_(UNAVAILABLE_STATION['nombre']))
+
+    def test_it_should_use_direccion_as_address(self):
+        assert_that(self.active, has_property('address'),
+                    is_(AVAILABLE_STATION['direccion']))
+
     def test_it_should_say_its_enabled_when_ok(self):
         assert_that(self.active, has_property('enabled', True))
 
@@ -108,7 +117,7 @@ class TestStations:
 
         assert_that(stations, only_contains(any_of(
             has_property('nombre', contains_string('Lavapies')),
-            has_property('direccion', contains_string('Lavapies')),
+            has_property('address', contains_string('Lavapies')),
         )))
         assert_that(stations, has_length(greater_than(0)))
 

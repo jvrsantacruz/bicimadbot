@@ -9,7 +9,7 @@ log = logging.getLogger('bicimad.telegram')
 unpack_message = itemgetter('from', 'chat', 'text', 'location')
 unpack_user = itemgetter('first_name', 'last_name', 'id')
 unpack_location = itemgetter('latitude', 'longitude')
-_format_station = '{0.direccion} ({0.id})'.format
+_format_station = '{0.address} ({0.id})'.format
 
 
 def _format_base(station, attr, bordername, format):
@@ -85,7 +85,7 @@ def make_search_command(name, format, queryname):
                 else:
                     response = 'La estación número {} '\
                         'es la que está en {}:\n\n{}'\
-                        .format(sid, station.direccion, format(station))
+                        .format(sid, station.address, format(station))
 
             else:
                 stations = bicimad.stations.by_search(arguments[0])

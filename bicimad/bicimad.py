@@ -55,6 +55,8 @@ class Station:
         self.bikes = int(self.bicis_enganchadas)
         self.enabled = bool(int(self.activo) and not int(self.no_disponible))
         self.position = float(self.latitud), float(self.longitud)
+        self.address = self.direccion if \
+            self.direccion != 'NO OPERATIVA' else self.nombre
 
     def distance_to(self, position):
         return geo_distance(self.position, position)
@@ -188,7 +190,7 @@ class Stations:
         return self.query(find('id', id))
 
     def by_search(self, query, max=5):
-        return self.query(index('nombre', 'direccion'),
+        return self.query(index('nombre', 'address'),
                           search(query), sort('index'), max=max)
 
     def by_distance(self, position, max=5):

@@ -64,7 +64,7 @@ class TestDistance(FilterTest):
 class TestSearch(FilterTest):
     def test_it_should_search_by_field(self):
         """Searches by given field"""
-        filter = query(index('direccion'), search('Plaza Santa Ana'))
+        filter = query(index('address'), search('Plaza Santa Ana'))
 
         result = self.filter(filter, (AVAILABLE_STATION, NO_BIKES_STATION))
 
@@ -73,7 +73,7 @@ class TestSearch(FilterTest):
 
     def test_it_should_sanitize_search_terms(self):
         """Removes street terms from search terms"""
-        filter = query(index('direccion'), search('Plaza Santa Ana'))
+        filter = query(index('address'), search('Plaza Santa Ana'))
 
         result = self.filter(filter, (AVAILABLE_STATION, NO_BIKES_STATION))
 
@@ -129,13 +129,13 @@ class TestQuery(FilterTest):
 
 class TestIndex(FilterTest):
     def test_it_should_create_a_index_property(self):
-        result = self.filter(index('nombre', 'direccion'),
+        result = self.filter(index('nombre', 'address'),
                             (FIRST_STATION, AVAILABLE_STATION))
 
         assert_that(result, only_contains(has_property('index')))
 
     def test_it_should_create_an_index_using_station_data(self):
-        result = self.filter(index('nombre', 'direccion'),
+        result = self.filter(index('nombre', 'address'),
                             (NAME_AND_ADDRESS_STATION,))
 
         assert_that(result, contains(has_property('index', all_of(

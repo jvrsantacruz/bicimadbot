@@ -55,13 +55,13 @@ class Obj:
             setattr(self, key, value)
 
 STATIONS = [
-    Obj(id=100, enabled=True, bikes=0, spaces=0, direccion='C/ Dirección A'),
-    Obj(id=101, enabled=True, bikes=1, spaces=1, direccion='C/ Dirección B'),
+    Obj(id=100, enabled=True, bikes=0, spaces=0, address='C/ Dirección A'),
+    Obj(id=101, enabled=True, bikes=1, spaces=1, address='C/ Dirección B'),
 ]
 
 BAD_STATIONS = [
-    Obj(id=200, enabled=False, bikes=0, spaces=0, direccion='C/ Dirección W'),
-    Obj(id=201, enabled=False, bikes=1, spaces=1, direccion='C/ Dirección X'),
+    Obj(id=200, enabled=False, bikes=0, spaces=0, address='C/ Dirección W'),
+    Obj(id=201, enabled=False, bikes=1, spaces=1, address='C/ Dirección X'),
 ]
 
 
@@ -130,8 +130,8 @@ class SearchCommand(ProcessMessage):
         self.assert_answer(all_of(
             contains_string('puede que sea alguna de estas'),
             contains_string(self.command),
-            contains_string(STATIONS[0].direccion),
-            contains_string(STATIONS[1].direccion)
+            contains_string(STATIONS[0].address),
+            contains_string(STATIONS[1].address)
         ))
 
     def test_it_should_answer_with_good_and_bad_results(self):
@@ -143,10 +143,10 @@ class SearchCommand(ProcessMessage):
             contains_string('puede que sea alguna de estas'),
             contains_string('Estas me salen pero no creo que te sirvan'),
             contains_string(self.command),
-            contains_string(STATIONS[0].direccion),
-            contains_string(STATIONS[1].direccion),
-            contains_string(BAD_STATIONS[0].direccion),
-            contains_string(BAD_STATIONS[1].direccion)
+            contains_string(STATIONS[0].address),
+            contains_string(STATIONS[1].address),
+            contains_string(BAD_STATIONS[0].address),
+            contains_string(BAD_STATIONS[1].address)
         ))
 
     def test_it_should_answer_only_with_bad_results(self):
@@ -156,8 +156,8 @@ class SearchCommand(ProcessMessage):
 
         self.assert_answer(all_of(
             contains_string('Estas me salen pero no creo que te sirvan'),
-            contains_string(BAD_STATIONS[0].direccion),
-            contains_string(BAD_STATIONS[1].direccion)
+            contains_string(BAD_STATIONS[0].address),
+            contains_string(BAD_STATIONS[1].address)
         ))
 
     def test_it_should_answer_searching_by_id(self):
@@ -165,7 +165,7 @@ class SearchCommand(ProcessMessage):
 
         self.process_with_args('  1')
 
-        self.assert_answer(contains_string(STATIONS[0].direccion))
+        self.assert_answer(contains_string(STATIONS[0].address))
 
     def test_it_should_answer_by_id_with_no_results_message(self):
         self.bicimad.stations.by_id.return_value = None
