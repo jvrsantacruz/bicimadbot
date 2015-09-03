@@ -12,12 +12,12 @@ unpack_location = itemgetter('latitude', 'longitude')
 _format_station = '{0.direccion} ({0.id})'.format
 
 
-def _format_base(station, format):
+def _format_base(station, attr, bordername, format):
     if not station.enabled:
         return 'Estación no disponible en {}'.format(_format_station(station))
 
-    if not station.bikes:
-        return 'Estación vacía en {}'.format(_format_station(station))
+    if not getattr(station, attr):
+        return 'Estación {} en {}'.format(bordername, _format_station(station))
 
     return format(station)
 
@@ -31,7 +31,7 @@ def format_bikes(station):
         return '{} bici{} en {}'.format(
             station.bikes, plural(station.bikes), _format_station(station))
 
-    return _format_base(station, format)
+    return _format_base(station, 'bikes', 'vacía', format)
 
 
 def format_spaces(station):
@@ -39,7 +39,7 @@ def format_spaces(station):
         return '{} plaza{} en {}'.format(
             station.spaces, plural(station.spaces), _format_station(station))
 
-    return _format_base(station, format)
+    return _format_base(station, 'spaces', 'a tope', format)
 
 
 def repr_user(user):
