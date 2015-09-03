@@ -1,3 +1,8 @@
+4.1.2 (2015-09-03)
+------------------
+
+* Fixes /plaza output that says empty station when its full
+
 4.1.1 (2015-09-03)
 ------------------
 
