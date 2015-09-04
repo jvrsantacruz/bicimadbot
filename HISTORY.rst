@@ -1,3 +1,8 @@
+4.2.0  2015-09-04
+-----------------
+
+* Adds free spaces and distance to location message
+
 4.1.3 (2015-09-03)
 ------------------
 
