@@ -23,7 +23,7 @@ def _format_base(station, attr, bordername, format):
 
 
 def plural(count, singular='', plural='s'):
-    return singular if count == 1 else plural
+    return singular if count <= 1 else plural
 
 
 def format_bikes(station):
@@ -40,6 +40,17 @@ def format_spaces(station):
             station.spaces, plural(station.spaces), _format_station(station))
 
     return _format_base(station, 'spaces', 'a tope', format)
+
+
+def verbalize(n):
+    return 'ninguna' if n == 0 else str(n)
+
+
+def format_station(station):
+    return '{} bici{} y {} plaza{} en {} a {} metros'.format(
+        verbalize(station.bikes), plural(station.bikes),
+        verbalize(station.spaces), plural(station.spaces),
+        _format_station(station), station.distance)
 
 
 def repr_user(user):
@@ -175,7 +186,7 @@ def process_location_message(update_id, chat_id, user, location, telegram, bicim
 
     stations = bicimad.stations.by_distance((lat, long))
     message = ('Las bicis que te pillan más cerca son:\n\n'
-                + '\n'.join(map(format_bikes, stations)))
+                + '\n'.join(map(format_station, stations)))
     telegram.send_message(chat_id, message)
 
 

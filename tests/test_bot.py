@@ -205,10 +205,17 @@ class TestProcessLocation(ProcessMessage):
         self.process(MSG_LOCATION)
 
         self.assert_answer(all_of(
-            #contains_string('0 bicis en C/ Dirección A (100)'),
-            contains_string('1 bici en C/ Dirección B (101)')
+            contains_string('ninguna bici y ninguna plaza en '
+                            'C/ Dirección A (100) a 100 metros'),
+            contains_string('1 bici y 1 plaza en '
+                            'C/ Dirección B (101) a 100 metros')
         ))
+
+    def stations(self):
+        for station in STATIONS:
+            station.distance = 100
+            yield station
 
     def setup(self):
         self.setup_mocks()
-        self.bicimad.stations.by_distance.return_value = STATIONS
+        self.bicimad.stations.by_distance.return_value = list(self.stations())
