@@ -50,7 +50,7 @@ def format_station(station):
     return '{} bici{} y {} plaza{} en {} a {} metros'.format(
         verbalize(station.bikes), plural(station.bikes),
         verbalize(station.spaces), plural(station.spaces),
-        _format_station(station), station.distance)
+        _format_station(station), int(station.distance))
 
 
 def repr_user(user):

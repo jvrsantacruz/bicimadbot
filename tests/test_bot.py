@@ -213,7 +213,7 @@ class TestProcessLocation(ProcessMessage):
 
     def stations(self):
         for station in STATIONS:
-            station.distance = 100
+            station.distance = 100.05
             yield station
 
     def setup(self):
