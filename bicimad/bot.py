@@ -47,10 +47,10 @@ def verbalize(n):
 
 
 def format_station(station):
-    return '{} bici{} y {} plaza{} en {} a {} metros'.format(
+    return '{} bici{} y {} plaza{} a {} m\n en {}'.format(
         verbalize(station.bikes), plural(station.bikes),
         verbalize(station.spaces), plural(station.spaces),
-        _format_station(station), int(station.distance))
+        int(station.distance), _format_station(station))
 
 
 def repr_user(user):
