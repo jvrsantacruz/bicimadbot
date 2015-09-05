@@ -79,3 +79,8 @@
 -----------------
 
 Initial version
+
+4.2.2  2015-09-05
+-----------------
+
+* Improves location message for better displaying
