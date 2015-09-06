@@ -6,7 +6,6 @@ from .helpers import itemgetter, to_int
 log = logging.getLogger('bicimad.telegram')
 
 
-unpack_message = itemgetter('from', 'chat', 'text', 'location')
 unpack_user = itemgetter('first_name', 'last_name', 'id')
 unpack_location = itemgetter('latitude', 'longitude')
 _format_station = '{0.address} ({0.id})'.format
@@ -86,7 +85,7 @@ def make_search_command(name, format, queryname):
     :returns: command handler function
     """
 
-    def function(update_id, chat_id, arguments, telegram, bicimad):
+    def function(update, arguments, telegram, bicimad):
         if not arguments or not arguments[0].strip():
             response = 'No me has dicho por qué buscar. '\
                 'Pon "/{} Sol", por poner un ejemplo, '\
@@ -165,31 +164,31 @@ command_handlers = dict(
 )
 
 
-def process_text_message(update_id, chat_id, user, text, telegram, bicimad):
-    if is_command(text):
+def process_text_message(update, telegram, bicimad):
+    if is_command(update.text):
         log.info(u'(update: %d chat: %d) Got command: %s from: %s',
-                 update_id, chat_id, text, repr_user(user))
+            update.id, update.chat_id, update.text, repr_user(update.sender))
 
-        command, arguments = parse_command(text)
-        command_args = (update_id, chat_id, arguments, telegram, bicimad)
-        response = command_handlers.get(command, command_unknown)(*command_args)
+        command, arguments = parse_command(update.text)
+        handler = command_handlers.get(command, command_unknown)
+        response = handler(update, arguments, telegram, bicimad)
 
         log.info(u'(update: %d chat: %d) Sending response to %s: %s',
-                 update_id, chat_id, repr_user(user), response)
+            update.id, update.chat_id, repr_user(update.sender), response)
 
-        telegram.send_message(chat_id, response)
+        telegram.send_message(update.chat_id, response)
         return
 
     log.info('(update: %d chat: %d) Got message from %s: %s',
-                update_id, chat_id, repr_user(user), text)
+        update.id, update.chat_id, repr_user(update.sender), update.text)
 
 
-def process_location_message(update_id, chat_id, user, location, telegram, bicimad):
-    lat, long = unpack_location(location)
+def process_location_message(update, telegram, bicimad):
+    lat, long = update.location
     log.info(u'(update: %d chat: %d) Got location from %s: lat: %f long: %f',
-                update_id, chat_id, repr_user(user), lat, long)
+        update.id, update.chat_id, repr_user(update.sender), lat, long)
 
-    stations = bicimad.stations.by_distance((lat, long))
+    stations = bicimad.stations.by_distance(update.location)
     good = bicimad.stations.with_some_use(stations)
     bad = set(stations) - set(good)
 
@@ -205,20 +204,18 @@ def process_location_message(update_id, chat_id, user, location, telegram, bicim
         message += 'Estas están cerca, pero como si no estuvieran:\n\n'\
             + '\n'.join(map(format_station, bad))
 
-    telegram.send_message(chat_id, message)
+    telegram.send_message(update.chat_id, message)
 
 
-def process_message(update_id, message, telegram, bicimad):
-    user, chat, text, location = unpack_message(message)
-    chat_id = chat['id']
+def process_message(update, telegram, bicimad):
+    if update.type == 'text':
+        process_text_message(update, telegram, bicimad)
 
-    if text:
-        process_text_message(update_id, chat_id, user, text, telegram, bicimad)
-
-    elif location:
-        process_location_message(update_id, chat_id, user, location, telegram, bicimad)
+    elif update.type == 'location':
+        process_location_message(update, telegram, bicimad)
 
     else:
         log.info(u'(update: %d chat: %d) Unmanaged message from %s: %s',
-                    update_id, chat_id, repr_user(user), message)
-        telegram.send_message(chat_id, u'No te pillo')
+                 update.id, update.chat_id,
+                 repr_user(update.sender), update.message)
+        telegram.send_message(update.chat_id, u'No te pillo')

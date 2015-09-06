@@ -1,34 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from bicimad.telegram import Telegram
 from bicimad.bot import process_message
+from bicimad.telegram import Telegram, Update
 from bicimad.bicimad import BiciMad, Stations
 
 from unittest.mock import Mock
 from hamcrest import assert_that, contains_string, all_of, contains
 
-
-CHAT_ID = 4128581
-UPDATE_ID = 987235637
-LOCATION = 40.405742, -3.694103
-MSG_LOCATION = {
-    "message_id": 21,
-    "from": {
-        "id": 4128581,
-        "first_name": "Javier",
-        "last_name": "Santacruz"
-    },
-    "chat": {
-        "id": CHAT_ID,
-        "first_name": "Javier",
-        "last_name": "Santacruz"
-    },
-    "date": 1439843938,
-    "location": {
-        "longitude": -3.694103,
-        "latitude": 40.405742
-    }
-}
+from .messages import CHAT_ID, UPDATE_ID, LOCATION, MSG_LOCATION
 
 
 def message(text):
@@ -67,7 +46,8 @@ BAD_STATIONS = [
 
 class ProcessMessage:
     def process(self, msg):
-        process_message(UPDATE_ID, msg, self.telegram, self.bicimad)
+        update = Update({'update_id': UPDATE_ID, 'message': msg})
+        process_message(update, self.telegram, self.bicimad)
 
     def setup(self):
         self.setup_mocks()
@@ -225,7 +205,6 @@ class TestProcessLocation(ProcessMessage):
 
         self.assert_answer(contains_string(
             'Estación no disponible a 100m en C/ Dirección X (201)'))
-
 
     def with_distance(self, stations):
         for station in stations:
