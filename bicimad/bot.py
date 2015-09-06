@@ -22,35 +22,36 @@ def _format_base(station, attr, bordername, format):
     return format(station)
 
 
-def plural(count, singular='', plural='s'):
-    return singular if count == 1 else plural
+def plural(singular, count, suffix='s', plural=None):
+    if count == 1:
+        return singular
+
+    return singular + suffix if plural is None else plural
 
 
 def format_bikes(station):
     def format(station):
-        return '{} bici{} en {}'.format(
-            station.bikes, plural(station.bikes), _format_station(station))
+        return '{n} {name} en {station}'.format(
+            n=station.bikes, name=plural('bici', station.bikes),
+            station=_format_station(station))
 
     return _format_base(station, 'bikes', 'vacía', format)
 
 
 def format_spaces(station):
     def format(station):
-        return '{} plaza{} en {}'.format(
-            station.spaces, plural(station.spaces), _format_station(station))
+        return '{n} {name} en {station}'.format(
+            n=station.spaces, name=plural('plaza', station.spaces),
+            station=_format_station(station))
 
     return _format_base(station, 'spaces', 'a tope', format)
 
 
-bike_emoji = "\U0001F6B2"
-inbox_emoji = "\U0001F4E5"
-
-
 def format_station(station):
-    return '{bikes} {bike} y {spaces} {space} a {dist} m en {station}'.format(
-        bikes=station.bikes, bike=bike_emoji,
-        spaces=station.spaces, space=inbox_emoji,
-        dist=int(station.distance), station=_format_station(station))
+    return '- {bikes} {bike} y {spaces} {space} a {m}m\n  en {station}'.format(
+        bikes=station.bikes, bike=plural('bici', station.bikes),
+        spaces=station.spaces, space=plural('plaza', station.spaces),
+        m=int(station.distance), station=_format_station(station))
 
 
 def repr_user(user):

@@ -196,10 +196,6 @@ class TestEstacionCommand(ProcessMessage):
 
 
 class TestProcessLocation(ProcessMessage):
-    bike_emoji = "\U0001F6B2"
-    inbox_emoji = "\U0001F4E5"
-
-
     def test_it_should_query_available_bikes(self):
         self.process(MSG_LOCATION)
 
@@ -208,17 +204,18 @@ class TestProcessLocation(ProcessMessage):
     def test_it_should_answer_message(self):
         self.process(MSG_LOCATION)
 
-        self.assert_answer(all_of(
-            contains_string('0 {} y 0 {} a 100 m'
-                            ' en C/ Dirección A (100)'
-                            .format(self.bike_emoji, self.inbox_emoji)),
-            contains_string('1 {} y 1 {} a 100 m'
-                            ' en C/ Dirección B (101)'
-                            .format(self.bike_emoji, self.inbox_emoji))
+        self.assert_answer(contains_string(
+            '- 0 bicis y 0 plazas a 100m\n'
+            '  en C/ Dirección A (100)'
+        ))
+
+        self.assert_answer(contains_string(
+            '- 1 bici y 1 plaza a 100m\n'
+            '  en C/ Dirección B (101)'
         ))
 
     def stations(self):
-        for station in STATIONS:
+        for station in STATIONS + BAD_STATIONS:
             station.distance = 100.05
             yield station
 
