@@ -84,3 +84,9 @@ Initial version
 -----------------
 
 * Improves location message for better displaying
+
+4.2.3  2015-09-06
+-----------------
+
+* Adds emoji to location message
+* Improves location message for better displaying
