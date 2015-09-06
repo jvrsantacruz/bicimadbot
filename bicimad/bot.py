@@ -48,6 +48,10 @@ def format_spaces(station):
 
 
 def format_station(station):
+    if not station.enabled:
+        return 'Estación no disponible a {}m en {}'.format(
+            int(station.distance), _format_station(station))
+
     return '- {bikes} {bike} y {spaces} {space} a {m}m\n  en {station}'.format(
         bikes=station.bikes, bike=plural('bici', station.bikes),
         spaces=station.spaces, space=plural('plaza', station.spaces),
@@ -186,8 +190,21 @@ def process_location_message(update_id, chat_id, user, location, telegram, bicim
                 update_id, chat_id, repr_user(user), lat, long)
 
     stations = bicimad.stations.by_distance((lat, long))
-    message = ('Las bicis que te pillan más cerca son:\n\n'
-                + '\n'.join(map(format_station, stations)))
+    good = bicimad.stations.with_some_use(stations)
+    bad = set(stations) - set(good)
+
+    message = ''
+    if good:
+        message = 'Las estaciones que te pillan más a mano son:\n\n'\
+            + '\n'.join(map(format_station, good))
+
+    if good and bad:
+        message += '\n\n'
+
+    if bad:
+        message += 'Estas están cerca, pero como si no estuvieran:\n\n'\
+            + '\n'.join(map(format_station, bad))
+
     telegram.send_message(chat_id, message)
 
 

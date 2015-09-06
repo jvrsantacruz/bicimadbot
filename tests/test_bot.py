@@ -201,7 +201,7 @@ class TestProcessLocation(ProcessMessage):
 
         self.bicimad.stations.by_distance.assert_called_once_with(LOCATION)
 
-    def test_it_should_answer_message(self):
+    def test_it_should_answer_message_with_empty_stations(self):
         self.process(MSG_LOCATION)
 
         self.assert_answer(contains_string(
@@ -209,16 +209,32 @@ class TestProcessLocation(ProcessMessage):
             '  en C/ Dirección A (100)'
         ))
 
+    def test_it_should_answer_message_with_single_stations(self):
+        self.process(MSG_LOCATION)
+
         self.assert_answer(contains_string(
             '- 1 bici y 1 plaza a 100m\n'
             '  en C/ Dirección B (101)'
         ))
 
-    def stations(self):
-        for station in STATIONS + BAD_STATIONS:
+    def test_it_should_answer_message_with_unusable_stations(self):
+        self.process(MSG_LOCATION)
+
+        self.assert_answer(contains_string(
+            'Estación no disponible a 100m en C/ Dirección W (200)'))
+
+        self.assert_answer(contains_string(
+            'Estación no disponible a 100m en C/ Dirección X (201)'))
+
+
+    def with_distance(self, stations):
+        for station in stations:
             station.distance = 100.05
             yield station
 
     def setup(self):
         self.setup_mocks()
-        self.bicimad.stations.by_distance.return_value = list(self.stations())
+        self.bicimad.stations.by_distance.return_value = \
+            list(self.with_distance(STATIONS + BAD_STATIONS))
+        self.bicimad.stations.with_some_use.return_value = \
+            list(self.with_distance(STATIONS))

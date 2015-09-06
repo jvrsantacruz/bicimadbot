@@ -202,6 +202,10 @@ class Stations:
     def with_spaces(self, stations, max=5):
         return self.query(enabled, with_spaces, stations=stations, max=max)
 
+    def with_some_use(self, stations, max=5):
+        return self.query(enabled, with_spaces,
+                          with_bikes, stations=stations, max=max)
+
 
 def normalize(name):
     """Normalize spanish addresses for searching"""
