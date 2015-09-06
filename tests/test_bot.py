@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from bicimad.telegram import Telegram
+from bicimad.bot import process_message
 from bicimad.bicimad import BiciMad, Stations
-from bicimad.bot import process_message, bike_emoji, inbox_emoji
 
 from unittest.mock import Mock
 from hamcrest import assert_that, contains_string, all_of, contains
@@ -196,6 +196,10 @@ class TestEstacionCommand(ProcessMessage):
 
 
 class TestProcessLocation(ProcessMessage):
+    bike_emoji = "\U0001F6B2"
+    inbox_emoji = "\U0001F4E5"
+
+
     def test_it_should_query_available_bikes(self):
         self.process(MSG_LOCATION)
 
@@ -207,10 +211,10 @@ class TestProcessLocation(ProcessMessage):
         self.assert_answer(all_of(
             contains_string('0 {} y 0 {} a 100 m'
                             ' en C/ Dirección A (100)'
-                            .format(bike_emoji, inbox_emoji)),
+                            .format(self.bike_emoji, self.inbox_emoji)),
             contains_string('1 {} y 1 {} a 100 m'
                             ' en C/ Dirección B (101)'
-                            .format(bike_emoji, inbox_emoji))
+                            .format(self.bike_emoji, self.inbox_emoji))
         ))
 
     def stations(self):

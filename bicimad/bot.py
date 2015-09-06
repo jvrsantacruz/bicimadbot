@@ -42,7 +42,7 @@ def format_spaces(station):
     return _format_base(station, 'spaces', 'a tope', format)
 
 
-bike_emoji = "\U0001F4E5"
+bike_emoji = "\U0001F6B2"
 inbox_emoji = "\U0001F4E5"
 
 
