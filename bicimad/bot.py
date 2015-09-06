@@ -23,7 +23,7 @@ def _format_base(station, attr, bordername, format):
 
 
 def plural(count, singular='', plural='s'):
-    return singular if count <= 1 else plural
+    return singular if count == 1 else plural
 
 
 def format_bikes(station):
@@ -42,15 +42,15 @@ def format_spaces(station):
     return _format_base(station, 'spaces', 'a tope', format)
 
 
-def verbalize(n):
-    return 'ninguna' if n == 0 else str(n)
+bike_emoji = "\U0001F4E5"
+inbox_emoji = "\U0001F4E5"
 
 
 def format_station(station):
-    return '{} bici{} y {} plaza{} a {} m\n en {}'.format(
-        verbalize(station.bikes), plural(station.bikes),
-        verbalize(station.spaces), plural(station.spaces),
-        int(station.distance), _format_station(station))
+    return '{bikes} {bike} y {spaces} {space} a {dist} m en {station}'.format(
+        bikes=station.bikes, bike=bike_emoji,
+        spaces=station.spaces, space=inbox_emoji,
+        dist=int(station.distance), station=_format_station(station))
 
 
 def repr_user(user):
