@@ -1,3 +1,8 @@
+4.4.0  2015-09-06
+-----------------
+
+* Adds update class to simplify message processing
+
 4.3.0  2015-09-06
 -----------------
 
