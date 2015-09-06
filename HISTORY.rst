@@ -1,3 +1,9 @@
+4.3.0  2015-09-06
+-----------------
+
+* Adds separation for available and unavailable stations in location message
+* Improves location message by removing emojis
+
 4.2.4  2015-09-06
 -----------------
 

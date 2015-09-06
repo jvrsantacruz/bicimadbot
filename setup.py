@@ -9,7 +9,7 @@ with open(os.path.join(here, 'requirements-fixed.txt')) as stream:
 
 setup(
     name='bicimad',
-    version='4.2.4',
+    version='4.3.0',
     description='BiciMad unofficial api',
     author='Javier Santacruz',
     author_email='javier.santacruz.lc@gmail.com',
