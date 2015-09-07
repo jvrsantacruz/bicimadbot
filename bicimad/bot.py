@@ -67,6 +67,12 @@ def command_start(*args):
         las que tienes más cerca"
 
 
+def divide_stations(bicimad, stations, queryname):
+    """Divide int good, bad stations"""
+    good = getattr(bicimad.stations, queryname)(stations)
+    return good, set(stations) - set(good)
+
+
 def make_search_command(name, format, queryname):
     """Builds generic search stations by text/id
 
@@ -101,8 +107,7 @@ def make_search_command(name, format, queryname):
                 else:
                     response = ''
 
-                    good = getattr(bicimad.stations, queryname)(stations)
-                    bad = set(stations) - set(good)
+                    good, bad = divide_stations(bicimad, stations, queryname)
 
                     # Valid search results
                     if good:
@@ -179,8 +184,7 @@ def process_location_message(update, telegram, bicimad):
         update.id, update.chat_id, repr_user(update.sender), lat, long)
 
     stations = bicimad.stations.by_distance(update.location)
-    good = bicimad.stations.with_some_use(stations)
-    bad = set(stations) - set(good)
+    good, bad = divide_stations(bicimad, stations, 'with_some_use')
 
     message = ''
     if good:
