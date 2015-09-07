@@ -10,6 +10,16 @@ unpack_user = itemgetter('first_name', 'last_name', 'id')
 unpack_location = itemgetter('latitude', 'longitude')
 
 
+def coroutine(function):
+    """Coroutine decorator"""
+    def wrapper(*args, **kwargs):
+        routine = function(*args, **kwargs)
+        next(routine)
+        return routine
+
+    return wrapper
+
+
 def _format_base(station, attr, bordername, format):
     if not station.enabled:
         return 'Estación no disponible en {!r}'.format(station)
@@ -159,9 +169,11 @@ command_handlers = dict(
 )
 
 
-def process_command_message(update, telegram, bicimad):
+@coroutine
+def process_command_message(telegram, bicimad):
+    update = yield
     log.info(u'%r Got command: %s from: %s',
-        update, update.text, repr_user(update.sender))
+        update, update.command, repr_user(update.sender))
 
     handler = command_handlers.get(update.command, command_unknown)
     response = handler(update, telegram, bicimad)
@@ -172,14 +184,19 @@ def process_command_message(update, telegram, bicimad):
     telegram.send_message(update.chat_id, response, reply_to=update.message_id)
 
 
-def process_text_message(update, telegram, bicimad):
+@coroutine
+def process_text_message(telegram, bicimad):
+    update = yield
     log.info('%r Got message from %s: %s',
         update, repr_user(update.sender), update.text)
 
 
-def process_location_message(update, telegram, bicimad):
-    log.info(u'%r Got location from %s (lat,long): %r',
-        update, repr_user(update.sender), update.location)
+@coroutine
+def process_location_message(telegram, bicimad):
+    update = yield
+    lat, long = update.location
+    log.info(u'%r Got location from %s: lat: %f long: %f',
+        update, repr_user(update.sender), lat, long)
 
     stations = bicimad.stations.by_distance(update.location)
     good, bad = divide_stations(bicimad, stations, 'with_some_use')
@@ -199,18 +216,50 @@ def process_location_message(update, telegram, bicimad):
     telegram.send_message(update.chat_id, message, reply_to=update.message_id)
 
 
-def process_message(update, telegram, bicimad):
+def process_message(update, telegram, bicimad, conversations={}):
+    """Process a new update"""
+
+    # Get or create conversation
+    conversation = conversations.get(update.sender['id'])
+    if conversation is None:
+        conversation = process_conversation(telegram, bicimad)
+        conversations[update.sender['id']] = conversation
+
+    # next conversation step
+    conversation.send(update)
+
+
+@coroutine
+def process_conversation(telegram, bicimad):
+    """Manages standing user conversation"""
+    conversation = None
+    while True:
+        update = yield
+
+        if not conversation:
+            conversation = start_conversation(update, telegram, bicimad)
+
+        try:
+            conversation.send(update)
+        except StopIteration:
+            conversation = None
+            log.info(u'(update: %d chat: %d) Finished conversation with %s',
+                     update.id, update.chat_id, repr_user(update.sender))
+
+
+def start_conversation(update, telegram, bicimad):
+    """starts conversation type from first update message"""
     if update.type == 'text':
-        process_text_message(update, telegram, bicimad)
+        return process_text_message(telegram, bicimad)
 
     elif update.type == 'command':
-        process_command_message(update, telegram, bicimad)
+        return process_command_message(telegram, bicimad)
 
     elif update.type == 'location':
-        process_location_message(update, telegram, bicimad)
+        return process_location_message(telegram, bicimad)
 
     else:
         log.info(u'(update: %d chat: %d) Unmanaged message from %s: %s',
-                 update.id, update.chat_id,
-                 repr_user(update.sender), update.message)
+                update.id, update.chat_id,
+                repr_user(update.sender), update.message)
         telegram.send_message(update.chat_id, u'No te pillo')
