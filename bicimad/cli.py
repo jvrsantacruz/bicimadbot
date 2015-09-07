@@ -12,8 +12,6 @@ from . import telegram
 log = logging.getLogger('bicimad.cli')
 output_format = '%(asctime)s %(name)s %(levelname)-8s %(message)s'
 verbosity_levels = [logging.ERROR, logging.INFO, logging.DEBUG]
-min_verbosity = 0
-max_verbosity = len(verbosity_levels) - 1
 
 
 def get_verbosity_level(index):
@@ -44,9 +42,10 @@ def start():
 
 
 @cli.group('telegram')
-def telegram_cli():
+@click.option('-v', '--verbose', count=True, default=0)
+def telegram_cli(verbose):
     """Telegram commands"""
-    setup_logging(2)
+    setup_logging(verbose)
 
 
 def telegram_options(function):
