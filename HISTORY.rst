@@ -1,3 +1,9 @@
+4.5.0  2015-09-07
+-----------------
+
+* Adds --verbose flag to telegram cli
+* Adds bot responses as telegram replies
+
 4.4.0  2015-09-06
 -----------------
 
