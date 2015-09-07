@@ -6,7 +6,7 @@ from bicimad.telegram import Telegram, Update
 
 import httpretty
 from hamcrest import (assert_that, has_property, all_of, ends_with,
-                      starts_with, is_, has_entry, has_entries, contains)
+                      starts_with, is_, has_entry, has_entries)
 
 from .messages import UPDATE_CHAT, UPDATE_COMMAND, UPDATE_LOCATION, LOCATION
 
@@ -118,7 +118,7 @@ class TestCommandUpdate(UpdateTest):
         assert_that(self.update, has_property('command', is_('bici')))
 
     def test_it_should_have_arguments(self):
-        assert_that(self.update, has_property('arguments', contains('arg1 arg2')))
+        assert_that(self.update, has_property('arguments', 'arg1 arg2'))
 
 
 class TestLocationUpdate(UpdateTest):

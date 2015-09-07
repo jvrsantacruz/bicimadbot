@@ -76,14 +76,14 @@ def make_search_command(name, format, queryname):
     :returns: command handler function
     """
 
-    def function(update, arguments, telegram, bicimad):
-        if not arguments or not arguments[0].strip():
+    def function(update, telegram, bicimad):
+        if not update.arguments:
             response = 'No me has dicho por qué buscar. '\
                 'Pon "/{} Sol", por poner un ejemplo, '\
                 'o comparte tu posición, y terminamos antes.'.format(name)
         else:
-            if to_int(arguments[0]):
-                sid = to_int(arguments[0])
+            if to_int(update.arguments):
+                sid = to_int(update.arguments)
                 station = bicimad.stations.by_id(sid)
                 if station is None:
                     response = 'Mmmm, no hay ninguna estación '\
@@ -94,7 +94,7 @@ def make_search_command(name, format, queryname):
                         .format(sid, station.address, format(station))
 
             else:
-                stations = bicimad.stations.by_search(arguments[0])
+                stations = bicimad.stations.by_search(update.arguments)
                 if not stations:
                     response = 'Uhh no me suena esa dirección para '\
                         'ninguna estación. Afina un poco más.'
@@ -160,7 +160,7 @@ def process_command_message(update, telegram, bicimad):
         update.id, update.chat_id, update.text, repr_user(update.sender))
 
     handler = command_handlers.get(update.command, command_unknown)
-    response = handler(update, update.arguments, telegram, bicimad)
+    response = handler(update, telegram, bicimad)
 
     log.info(u'(update: %d chat: %d) Sending response to %s: %s',
         update.id, update.chat_id, repr_user(update.sender), response)

@@ -162,7 +162,9 @@ class CommandUpdate(Update):
 
     def parse_command(self, text):
         parsed = text.split(' ', 1)
-        return parsed[0].strip('/'), parsed[1:]
+        command = parsed[0].strip('/')
+        arguments = ' '.join(parsed[1:]).strip()
+        return command, arguments
 
 
 class LocationUpdate(Update):
