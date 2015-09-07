@@ -79,12 +79,21 @@ class Telegram(object):
         return requests.get(urljoin(self.url, 'getUpdates'),
                             timeout=timeout, params=params).json()
 
-    def send_message(self, chat_id, text):
-        return self.send_telegram('sendMessage', chat_id=chat_id, text=text)
+    def send_message(self, chat_id, text, reply_to=None):
+        kwargs = dict(chat_id=chat_id, text=text)
 
-    def send_location(self, chat_id, latitude, longitude):
-        return self.send_telegram('sendLocation', chat_id=chat_id,
-                                  latitude=latitude, longitude=longitude)
+        if reply_to:
+            kwargs['reply_to_message_id'] = reply_to
+
+        return self.send_telegram('sendMessage', **kwargs)
+
+    def send_location(self, chat_id, latitude, longitude, reply_to=None):
+        kwargs = dict(chat_id=chat_id, latitude=latitude, longitude=longitude)
+
+        if reply_to:
+            kwargs['reply_to_message_id'] = reply_to
+
+        return self.send_telegram('sendLocation', **kwargs)
 
 
 class Update:

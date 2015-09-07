@@ -170,7 +170,7 @@ def process_command_message(update, telegram, bicimad):
     log.info(u'(update: %d chat: %d) Sending response to %s: %s',
         update.id, update.chat_id, repr_user(update.sender), response)
 
-    telegram.send_message(update.chat_id, response)
+    telegram.send_message(update.chat_id, response, reply_to=update.message_id)
 
 
 def process_text_message(update, telegram, bicimad):
@@ -198,7 +198,7 @@ def process_location_message(update, telegram, bicimad):
         message += 'Estas están cerca, pero como si no estuvieran:\n\n'\
             + '\n'.join(map(format_station, bad))
 
-    telegram.send_message(update.chat_id, message)
+    telegram.send_message(update.chat_id, message, reply_to=update.message_id)
 
 
 def process_message(update, telegram, bicimad):
