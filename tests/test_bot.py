@@ -46,7 +46,7 @@ BAD_STATIONS = [
 
 class ProcessMessage:
     def process(self, msg):
-        update = Update({'update_id': UPDATE_ID, 'message': msg})
+        update = Update.from_response({'update_id': UPDATE_ID, 'message': msg})
         process_message(update, self.telegram, self.bicimad)
 
     def setup(self):

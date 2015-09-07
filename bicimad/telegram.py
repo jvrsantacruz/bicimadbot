@@ -21,7 +21,7 @@ def process_updates(updates, config, telegram, bicimad):
     last_update = config.get('telegram.offset', 0)
     log.debug('Current update offset: %d', last_update)
 
-    for update in map(Update, updates['result']):
+    for update in map(Update.from_response, updates['result']):
         log.debug('(update: %d) Update offset: %d to %d',
                     update.id, last_update, update.id)
         last_update = update.id + 1
@@ -89,9 +89,6 @@ class Telegram(object):
 
 class Update:
     def __init__(self, update):
-        self.from_dict(update)
-
-    def from_dict(self, update):
         """Load from Telegram Update
 
     {
@@ -121,15 +118,65 @@ class Update:
         self.chat = self.message['chat']
         self.chat_id = self.chat['id']
         self.date = datetime.datetime.fromtimestamp(self.message.get('date'))
-        self.text = self.message.get('text')
-        self.location = None
-        if 'location' in self.message:
-            self.location = (self.message['location']['latitude'],
-                             self.message['location']['longitude'])
 
-    @property
-    def type(self):
-        if self.text is not None:
-            return 'text'
-        elif self.location is not None:
-            return 'location'
+    @classmethod
+    def from_response(cls, update):
+        """Create update from a Telegram response Update
+
+        Factory method that will return a instance of the most appropiate
+        Update type for the given update input.
+
+        :param update: `from_dict` method
+        :returns: Update subtype instance
+        """
+        for subcls in cls.__subclasses__():
+            if subcls.accepts(update):
+                return subcls(update)
+
+
+class TextUpdate(Update):
+    type = 'text'
+
+    def __init__(self, data):
+        super().__init__(data)
+        self.text = self.message['text']
+
+    @staticmethod
+    def accepts(update):
+        text = update['message'].get('text')
+        return text is not None and not is_command(text)
+
+
+class CommandUpdate(Update):
+    type = 'command'
+
+    def __init__(self, data):
+        super().__init__(data)
+        self.text = self.message['text']
+        self.command, self.arguments = self.parse_command(self.text)
+
+    @staticmethod
+    def accepts(update):
+        text = update['message'].get('text')
+        return text and is_command(text)
+
+    def parse_command(self, text):
+        parsed = text.split(' ', 1)
+        return parsed[0].strip('/'), parsed[1:]
+
+
+class LocationUpdate(Update):
+    type = 'location'
+
+    def __init__(self, data):
+        super().__init__(data)
+        self.location = (self.message['location']['latitude'],
+                         self.message['location']['longitude'])
+
+    @staticmethod
+    def accepts(update):
+        return 'location' in update['message']
+
+
+def is_command(text):
+    return text.startswith('/')

@@ -6,9 +6,9 @@ from bicimad.telegram import Telegram, Update
 
 import httpretty
 from hamcrest import (assert_that, has_property, all_of, ends_with,
-                      starts_with, is_, has_entry, has_entries)
+                      starts_with, is_, has_entry, has_entries, contains)
 
-from .messages import UPDATE_CHAT, UPDATE_LOCATION, LOCATION
+from .messages import UPDATE_CHAT, UPDATE_COMMAND, UPDATE_LOCATION, LOCATION
 
 
 HOST = 'https://api.none.com'
@@ -94,7 +94,7 @@ class UpdateTest:
         assert_that(self.update, has_property('type', is_(self.type)))
 
     def setup(self):
-        self.update = Update(self.response)
+        self.update = Update.from_response(self.response)
 
 
 class TestTextUpdate(UpdateTest):
@@ -104,6 +104,21 @@ class TestTextUpdate(UpdateTest):
     def test_it_should_have_text(self):
         assert_that(self.update, has_property(
             'text', is_(self.response['message']['text'])))
+
+
+class TestCommandUpdate(UpdateTest):
+    type = 'command'
+    response = UPDATE_COMMAND
+
+    def test_it_should_have_text(self):
+        assert_that(self.update, has_property(
+            'text', is_(self.response['message']['text'])))
+
+    def test_it_should_have_command(self):
+        assert_that(self.update, has_property('command', is_('bici')))
+
+    def test_it_should_have_arguments(self):
+        assert_that(self.update, has_property('arguments', contains('arg1 arg2')))
 
 
 class TestLocationUpdate(UpdateTest):

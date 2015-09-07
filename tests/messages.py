@@ -37,7 +37,7 @@ CHAT_MSG_CHAT = {
     "first_name": "Javier",
     "last_name": "Santacruz"
 }
-CHAT_MSG_TEXT = "/bici"
+CHAT_MSG_TEXT = "lorem piñum ípsúm"
 
 MSG_CHAT = {
     "message_id": CHAT_MSG_ID,
@@ -53,6 +53,22 @@ UPDATE_CHAT = {
     "message": MSG_CHAT
 }
 
+COMMAND_NAME = "bici"
+COMMAND_ARGS = "arg1 arg2"
+COMMAND_MSG_TEXT = "/" + COMMAND_NAME + " " + COMMAND_ARGS
+
+MSG_COMMAND = {
+    "message_id": CHAT_MSG_ID,
+    "from": CHAT_MSG_SENDER,
+    "chat": CHAT_MSG_CHAT,
+    "date": CHAT_MSG_TIMESTAMP,
+    "text": COMMAND_MSG_TEXT
+}
+
+UPDATE_COMMAND = {
+    "update_id": UPDATE_ID,
+    "message": MSG_COMMAND
+}
 
 UPDATE_LOCATION = {
     "update_id": UPDATE_ID,

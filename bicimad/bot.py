@@ -61,15 +61,6 @@ def repr_user(user):
     return 'User(name="{} {}", id={})'.format(*unpack_user(user))
 
 
-def is_command(text):
-    return text.startswith('/')
-
-
-def parse_command(text):
-    parsed = text.split(' ', 1)
-    return parsed[0].strip('/'), parsed[1:]
-
-
 def command_start(*args):
     return "¡Hola! Puedo echarte un cable para encontrar \
         una bicicleta. Comparte conmigo tu posición y te diré \
@@ -164,21 +155,20 @@ command_handlers = dict(
 )
 
 
+def process_command_message(update, telegram, bicimad):
+    log.info(u'(update: %d chat: %d) Got command: %s from: %s',
+        update.id, update.chat_id, update.text, repr_user(update.sender))
+
+    handler = command_handlers.get(update.command, command_unknown)
+    response = handler(update, update.arguments, telegram, bicimad)
+
+    log.info(u'(update: %d chat: %d) Sending response to %s: %s',
+        update.id, update.chat_id, repr_user(update.sender), response)
+
+    telegram.send_message(update.chat_id, response)
+
+
 def process_text_message(update, telegram, bicimad):
-    if is_command(update.text):
-        log.info(u'(update: %d chat: %d) Got command: %s from: %s',
-            update.id, update.chat_id, update.text, repr_user(update.sender))
-
-        command, arguments = parse_command(update.text)
-        handler = command_handlers.get(command, command_unknown)
-        response = handler(update, arguments, telegram, bicimad)
-
-        log.info(u'(update: %d chat: %d) Sending response to %s: %s',
-            update.id, update.chat_id, repr_user(update.sender), response)
-
-        telegram.send_message(update.chat_id, response)
-        return
-
     log.info('(update: %d chat: %d) Got message from %s: %s',
         update.id, update.chat_id, repr_user(update.sender), update.text)
 
@@ -210,6 +200,9 @@ def process_location_message(update, telegram, bicimad):
 def process_message(update, telegram, bicimad):
     if update.type == 'text':
         process_text_message(update, telegram, bicimad)
+
+    elif update.type == 'command':
+        process_command_message(update, telegram, bicimad)
 
     elif update.type == 'location':
         process_location_message(update, telegram, bicimad)
