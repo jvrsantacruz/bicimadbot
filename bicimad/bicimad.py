@@ -62,9 +62,7 @@ class Station:
         return geo_distance(self.position, position)
 
     def __str__(self):
-        enabled = '' if self.enabled else ', disabled'
-        return 'Station({s.id}, {s.nombre}, '\
-            '[{s.bikes}b|{s.spaces}s]{})'.format(enabled, s=self)
+        return '{} ({})'.format(self.address, self.id)
 
     def __repr__(self):
         return str(self)

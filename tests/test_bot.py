@@ -33,6 +33,10 @@ class Obj:
         for key, value in kwargs.items():
             setattr(self, key, value)
 
+    def __repr__(self):
+        return '{} ({})'.format(self.address, self.id)
+
+
 STATIONS = [
     Obj(id=100, enabled=True, bikes=0, spaces=0, address='C/ Dirección A'),
     Obj(id=101, enabled=True, bikes=1, spaces=1, address='C/ Dirección B'),

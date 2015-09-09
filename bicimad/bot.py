@@ -8,15 +8,14 @@ log = logging.getLogger('bicimad.telegram')
 
 unpack_user = itemgetter('first_name', 'last_name', 'id')
 unpack_location = itemgetter('latitude', 'longitude')
-_format_station = '{0.address} ({0.id})'.format
 
 
 def _format_base(station, attr, bordername, format):
     if not station.enabled:
-        return 'Estación no disponible en {}'.format(_format_station(station))
+        return 'Estación no disponible en {!r}'.format(station)
 
     if not getattr(station, attr):
-        return 'Estación {} en {}'.format(bordername, _format_station(station))
+        return 'Estación {} en {!r}'.format(bordername, station)
 
     return format(station)
 
@@ -30,31 +29,31 @@ def plural(singular, count, suffix='s', plural=None):
 
 def format_bikes(station):
     def format(station):
-        return '{n} {name} en {station}'.format(
+        return '{n} {name} en {station!r}'.format(
             n=station.bikes, name=plural('bici', station.bikes),
-            station=_format_station(station))
+            station=station)
 
     return _format_base(station, 'bikes', 'vacía', format)
 
 
 def format_spaces(station):
     def format(station):
-        return '{n} {name} en {station}'.format(
+        return '{n} {name} en {station!r}'.format(
             n=station.spaces, name=plural('plaza', station.spaces),
-            station=_format_station(station))
+            station=station)
 
     return _format_base(station, 'spaces', 'a tope', format)
 
 
 def format_station(station):
     if not station.enabled:
-        return 'Estación no disponible a {}m en {}'.format(
-            int(station.distance), _format_station(station))
+        return 'Estación no disponible a {}m en {!r}'.format(
+            int(station.distance), station)
 
-    return '- {bikes} {bike} y {spaces} {space} a {m}m\n  en {station}'.format(
-        bikes=station.bikes, bike=plural('bici', station.bikes),
-        spaces=station.spaces, space=plural('plaza', station.spaces),
-        m=int(station.distance), station=_format_station(station))
+    return '- {bikes} {bike} y {spaces} {space} a {m}m\n  en {station!r}'\
+        .format(bikes=station.bikes, bike=plural('bici', station.bikes),
+                spaces=station.spaces, space=plural('plaza', station.spaces),
+                m=int(station.distance), station=station)
 
 
 def repr_user(user):
