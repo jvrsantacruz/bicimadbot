@@ -26,11 +26,6 @@ def process_updates(updates, config, telegram, bicimad):
                     update.id, last_update, update.id)
         last_update = update.id + 1
 
-        if update.message is None:
-            log.error('(update: %d) Expected a message in update, got: %r',
-                      update.id, update.raw)
-            continue
-
         process_message(update, telegram, bicimad)
 
     log.debug(u'Last offset: %d', last_update)
@@ -141,6 +136,12 @@ class Update:
         for subcls in cls.__subclasses__():
             if subcls.accepts(update):
                 return subcls(update)
+
+    def __str__(self):
+        return '(update=%d, chat=%d)' % (self.id, self.chat_id)
+
+    def __repr__(self):
+        return type(self).__name__ + str(self)
 
 
 class TextUpdate(Update):

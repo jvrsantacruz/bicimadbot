@@ -161,27 +161,26 @@ command_handlers = dict(
 
 
 def process_command_message(update, telegram, bicimad):
-    log.info(u'(update: %d chat: %d) Got command: %s from: %s',
-        update.id, update.chat_id, update.text, repr_user(update.sender))
+    log.info(u'%r Got command: %s from: %s',
+        update, update.text, repr_user(update.sender))
 
     handler = command_handlers.get(update.command, command_unknown)
     response = handler(update, telegram, bicimad)
 
-    log.info(u'(update: %d chat: %d) Sending response to %s: %s',
-        update.id, update.chat_id, repr_user(update.sender), response)
+    log.info(u'%r Sending response to %s: %s',
+        update, repr_user(update.sender), response)
 
     telegram.send_message(update.chat_id, response, reply_to=update.message_id)
 
 
 def process_text_message(update, telegram, bicimad):
-    log.info('(update: %d chat: %d) Got message from %s: %s',
-        update.id, update.chat_id, repr_user(update.sender), update.text)
+    log.info('%r Got message from %s: %s',
+        update, repr_user(update.sender), update.text)
 
 
 def process_location_message(update, telegram, bicimad):
-    lat, long = update.location
-    log.info(u'(update: %d chat: %d) Got location from %s: lat: %f long: %f',
-        update.id, update.chat_id, repr_user(update.sender), lat, long)
+    log.info(u'%r Got location from %s (lat,long): %r',
+        update, repr_user(update.sender), update.location)
 
     stations = bicimad.stations.by_distance(update.location)
     good, bad = divide_stations(bicimad, stations, 'with_some_use')
