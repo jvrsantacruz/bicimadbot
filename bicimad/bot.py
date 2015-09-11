@@ -20,6 +20,26 @@ def coroutine(function):
     return wrapper
 
 
+def send(routine, value):
+    """Send value to coroutine without raising"""
+    try:
+        routine.send(value)
+    except StopIteration:
+        return False
+    else:
+        return True
+
+
+@coroutine
+def conversation(start):
+    """Manages standing user conversation"""
+    while True:
+        update = yield
+        routine = start(update)
+        while send(routine, update):
+            update = yield
+
+
 def _format_base(station, attr, bordername, format):
     if not station.enabled:
         return 'Estación no disponible en {!r}'.format(station)
@@ -70,10 +90,13 @@ def repr_user(user):
     return 'User(name="{} {}", id={})'.format(*unpack_user(user))
 
 
-def command_start(*args):
-    return "¡Hola! Puedo echarte un cable para encontrar \
+@coroutine
+def command_start(telegram, bicimad):
+    update = yield
+    response = "¡Hola! Puedo echarte un cable para encontrar \
         una bicicleta. Comparte conmigo tu posición y te diré \
         las que tienes más cerca"
+    telegram.send_message(update.chat_id, response)
 
 
 def divide_stations(bicimad, stations, queryname):
@@ -91,7 +114,10 @@ def make_search_command(name, format, queryname):
     :returns: command handler function
     """
 
-    def function(update, telegram, bicimad):
+    @coroutine
+    def function(telegram, bicimad):
+        update = yield
+
         if not update.arguments:
             response = 'No me has dicho por qué buscar. '\
                 'Pon "/{} Sol", por poner un ejemplo, '\
@@ -133,7 +159,7 @@ def make_search_command(name, format, queryname):
                             'que te sirvan de mucho:\n\n'\
                             + '\n'.join(map(format, bad))
 
-        return response
+        telegram.send_message(update.chat_id, response)
 
     return function
 
@@ -142,22 +168,31 @@ command_bici = make_search_command('bici', format_bikes, 'with_bikes')
 command_plaza = make_search_command('plaza', format_spaces, 'with_spaces')
 
 
-def command_help(*args):
-    return 'Puedo ayudarte a encontrar una bici si me '\
+@coroutine
+def command_help(telegram, bicimad):
+    update = yield
+    response = 'Puedo ayudarte a encontrar una bici si me '\
         'preguntas con cariño.\n\n'\
         '* Puedes buscar una estación buscando por nombre '\
         'por ej: "/bici atocha"\n'\
         '* Es mucho más rápido darle a "compartir posición" y te '\
         'diré todas las que tienes alrededor.\n\n'\
         'Vamos poco a poco añadiendo más posibilidades :)'
+    telegram.send_message(update.chat_id, response)
 
 
-def command_estacion(*args):
-    return "Este comando funcionará próximamente"
+@coroutine
+def command_estacion(telegram, bicimad):
+    update = yield
+    response = "Este comando funcionará próximamente"
+    telegram.send_message(update.chat_id, response)
 
 
-def command_unknown(*args):
-    return "No reconozco esa orden"
+@coroutine
+def command_unknown(telegram, bicimad):
+    update = yield
+    response = "No reconozco esa orden"
+    telegram.send_message(update.chat_id, response, reply_to=update.message_id)
 
 
 command_handlers = dict(
@@ -173,15 +208,12 @@ command_handlers = dict(
 def process_command_message(telegram, bicimad):
     update = yield
     log.info(u'%r Got command: %s from: %s',
-        update, update.command, repr_user(update.sender))
+             update, update.command, repr_user(update.sender))
 
     handler = command_handlers.get(update.command, command_unknown)
-    response = handler(update, telegram, bicimad)
-
-    log.info(u'%r Sending response to %s: %s',
-        update, repr_user(update.sender), response)
-
-    telegram.send_message(update.chat_id, response, reply_to=update.message_id)
+    routine = handler(telegram, bicimad)
+    while send(routine, update):
+        update = yield
 
 
 @coroutine
@@ -222,29 +254,17 @@ def process_message(update, telegram, bicimad, conversations={}):
     # Get or create conversation
     conversation = conversations.get(update.sender['id'])
     if conversation is None:
-        conversation = process_conversation(telegram, bicimad)
+        conversation = create_conversation(telegram, bicimad)
         conversations[update.sender['id']] = conversation
 
     # next conversation step
     conversation.send(update)
 
 
-@coroutine
-def process_conversation(telegram, bicimad):
-    """Manages standing user conversation"""
-    conversation = None
-    while True:
-        update = yield
-
-        if not conversation:
-            conversation = start_conversation(update, telegram, bicimad)
-
-        try:
-            conversation.send(update)
-        except StopIteration:
-            conversation = None
-            log.info(u'(update: %d chat: %d) Finished conversation with %s',
-                     update.id, update.chat_id, repr_user(update.sender))
+def create_conversation(telegram, bicimad):
+    """Create user conversation"""
+    return conversation(
+        lambda update: start_conversation(update, telegram, bicimad))
 
 
 def start_conversation(update, telegram, bicimad):
