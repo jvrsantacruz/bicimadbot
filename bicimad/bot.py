@@ -117,47 +117,52 @@ def make_search_command(name, format, queryname):
     @coroutine
     def function(telegram, bicimad):
         update = yield
+        arguments = update.arguments
 
-        if not update.arguments:
+        if not arguments:
             response = 'No me has dicho por qué buscar. '\
                 'Pon "/{} Sol", por poner un ejemplo, '\
                 'o comparte tu posición, y terminamos antes.'.format(name)
-        else:
-            if to_int(update.arguments):
-                sid = to_int(update.arguments)
-                station = bicimad.stations.by_id(sid)
-                if station is None:
-                    response = 'Mmmm, no hay ninguna estación '\
-                        'con id {}. Prueba con el nombre.'.format(sid)
-                else:
-                    response = 'La estación número {} '\
-                        'es la que está en {}:\n\n{}'\
-                        .format(sid, station.address, format(station))
 
+            telegram.send_message(update.chat_id, response, force_reply=True)
+            update = yield
+            arguments = update.text
+
+        if to_int(arguments):
+            sid = to_int(arguments)
+            station = bicimad.stations.by_id(sid)
+            if station is None:
+                response = 'Mmmm, no hay ninguna estación '\
+                    'con id {}. Prueba con el nombre.'.format(sid)
             else:
-                stations = bicimad.stations.by_search(update.arguments)
-                if not stations:
-                    response = 'Uhh no me suena esa dirección para '\
-                        'ninguna estación. Afina un poco más.'
-                else:
-                    response = ''
+                response = 'La estación número {} '\
+                    'es la que está en {}:\n\n{}'\
+                    .format(sid, station.address, format(station))
 
-                    good, bad = divide_stations(bicimad, stations, queryname)
+        else:
+            stations = bicimad.stations.by_search(arguments)
+            if not stations:
+                response = 'Uhh no me suena esa dirección para '\
+                    'ninguna estación. Afina un poco más.'
+            else:
+                response = ''
 
-                    # Valid search results
-                    if good:
-                        response += 'Pues puede que sea alguna de estas:\n\n'\
-                            + '\n'.join(map(format, good))
+                good, bad = divide_stations(bicimad, stations, queryname)
 
-                    # separator
-                    if good and bad:
-                        response += '\n\n'
+                # Valid search results
+                if good:
+                    response += 'Pues puede que sea alguna de estas:\n\n'\
+                        + '\n'.join(map(format, good))
 
-                    # Valid search results but empty or unavailable
-                    if bad:
-                        response += 'Estas me salen pero no creo '\
-                            'que te sirvan de mucho:\n\n'\
-                            + '\n'.join(map(format, bad))
+                # separator
+                if good and bad:
+                    response += '\n\n'
+
+                # Valid search results but empty or unavailable
+                if bad:
+                    response += 'Estas me salen pero no creo '\
+                        'que te sirvan de mucho:\n\n'\
+                        + '\n'.join(map(format, bad))
 
         telegram.send_message(update.chat_id, response)
 

@@ -49,9 +49,13 @@ BAD_STATIONS = [
 
 
 class ProcessMessage:
-    def process(self, msg):
+    def process(self, msg, convs=None):
+        convs = {} if convs is None else convs
         update = Update.from_response({'update_id': UPDATE_ID, 'message': msg})
-        process_message(update, self.telegram, self.bicimad, {})
+        process_message(update, self.telegram, self.bicimad, convs)
+
+    def process_text(self, text, convs=None):
+        self.process(message(text), convs)
 
     def setup(self):
         self.setup_mocks()
@@ -91,13 +95,24 @@ class SearchCommand(ProcessMessage):
         function = getattr(self.bicimad.stations, self.queryname)
         function.return_value = good
 
-    def process_with_args(self, argument):
-        self.process(message('/{} {}'.format(self.command, argument)))
+    def process_with_args(self, argument, convs=None):
+        convs = {} if convs is None else convs
+        self.process(message('/{} {}'.format(self.command, argument)), convs)
 
     def test_it_should_check_arguments(self):
         self.process_with_args('  \n')
 
         self.assert_answer(contains_string('No me has dicho'))
+
+    def test_it_should_ask_for_more_arguments(self):
+        conversation = {}
+
+        self.process_with_args('  \n', conversation)
+        self.assert_answer(contains_string('No me has dicho'))
+
+        self.set_result([])
+        self.process_text('wwwwww', conversation)
+        self.assert_answer(contains_string('no me suena'))
 
     def test_it_should_answer_with_no_results_message(self):
         self.set_result([])
