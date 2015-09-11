@@ -48,8 +48,8 @@ class Telegram(object):
 
     def send_telegram(self, endpoint, **kwargs):
         """Send generic telegram api requests"""
-        return requests.get(urljoin(self.url, endpoint),
-                            timeout=self.timeout, params=kwargs).json()
+        return requests.post(urljoin(self.url, endpoint),
+                            timeout=self.timeout, json=kwargs).json()
 
     def get_updates(self, offset=0):
         """Get input updates from the server
@@ -71,8 +71,8 @@ class Telegram(object):
         # Tell the server what to return and how much to wait
         params = dict(offset=offset, timeout=self.poll_timeout)
 
-        return requests.get(urljoin(self.url, 'getUpdates'),
-                            timeout=timeout, params=params).json()
+        return requests.post(urljoin(self.url, 'getUpdates'),
+                            timeout=timeout, json=params).json()
 
     def send_message(self, chat_id, text, reply_to=None):
         kwargs = dict(chat_id=chat_id, text=text)

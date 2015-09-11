@@ -36,8 +36,7 @@ class TestTelegram:
 
         self.telegram.get_updates(1)
 
-        assert_that(httpretty.last_request().querystring,
-                    has_entry('offset', ['1']))
+        assert_that(self.sent_json, has_entry('offset', 1))
 
     @httpretty.activate
     def test_it_should_send_messages(self):
@@ -45,12 +44,25 @@ class TestTelegram:
 
         self.telegram.send_message(CHAT_ID, TEXT)
 
-        assert_that(httpretty.last_request().querystring,
-            has_entries({'chat_id': [str(CHAT_ID)], 'text': [TEXT]}))
+        assert_that(self.sent_json,
+            has_entries({'chat_id': CHAT_ID, 'text': TEXT}))
+
+    @httpretty.activate
+    def test_it_should_force_reply(self):
+        self.register('sendMessage')
+
+        self.telegram.send_message(CHAT_ID, TEXT, force_reply=True)
+
+        assert_that(self.sent_json,
+            has_entry('reply_markup', has_entry('force_reply', True)))
+
+    @property
+    def sent_json(self):
+        return json.loads(httpretty.last_request().body.decode('utf-8'))
 
     def register(self, endpoint, json_=None):
         httpretty.register_uri(
-            httpretty.GET,
+            httpretty.POST,
             urljoin(self.telegram.url, endpoint),
             body=self.json_response,
             content_type='application/json'
