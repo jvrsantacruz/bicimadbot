@@ -1,3 +1,11 @@
+5.0.0  2015-09-12
+-----------------
+
+* Adds conversational interaction via coroutines
+* Adds initial coroutine support
+* Adds __repr__ to Station class
+* Adds __repr__ to Update classes
+
 4.5.0  2015-09-07
 -----------------
 
