@@ -1,4 +1,5 @@
 import logging
+import functools
 
 from .helpers import itemgetter, to_int
 
@@ -12,6 +13,7 @@ unpack_location = itemgetter('latitude', 'longitude')
 
 def coroutine(function):
     """Coroutine decorator"""
+    @functools.wraps(function)
     def wrapper(*args, **kwargs):
         routine = function(*args, **kwargs)
         next(routine)
@@ -257,19 +259,14 @@ def process_message(update, telegram, bicimad, conversations={}):
     """Process a new update"""
 
     # Get or create conversation
-    conversation = conversations.get(update.sender['id'])
-    if conversation is None:
-        conversation = create_conversation(telegram, bicimad)
-        conversations[update.sender['id']] = conversation
+    convers = conversations.get(update.sender['id'])
+    if convers is None:
+        convers = conversation(
+            lambda update: start_conversation(update, telegram, bicimad))
+        conversations[update.sender['id']] = convers
 
     # next conversation step
-    conversation.send(update)
-
-
-def create_conversation(telegram, bicimad):
-    """Create user conversation"""
-    return conversation(
-        lambda update: start_conversation(update, telegram, bicimad))
+    convers.send(update)
 
 
 def start_conversation(update, telegram, bicimad):
