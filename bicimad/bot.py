@@ -1,7 +1,7 @@
 import logging
 import functools
 
-from .helpers import itemgetter, to_int
+from .helpers import itemgetter
 
 
 log = logging.getLogger('bicimad.telegram')
@@ -122,25 +122,23 @@ def make_search_command(name, format, queryname):
         arguments = update.arguments
 
         if not arguments:
-            response = 'No me has dicho por qué buscar. '\
-                'Pon "/{} Sol", por poner un ejemplo, '\
-                'o comparte tu posición, y terminamos antes.'.format(name)
+            response = 'Dime el número o la dirección para buscar la estación.'\
+                ' También puedes poner directamente por ejemplo "/{} Sol", '\
+                'o compartir tu posición, y terminamos antes.'.format(name)
 
             telegram.send_message(update.chat_id, response, force_reply=True)
             update = yield
             arguments = update.text
 
-        if to_int(arguments):
-            sid = to_int(arguments)
+        if arguments.isdigit():
+            sid = int(arguments)
             station = bicimad.stations.by_id(sid)
             if station is None:
                 response = 'Mmmm, no hay ninguna estación '\
                     'con id {}. Prueba con el nombre.'.format(sid)
             else:
-                response = 'La estación número {} '\
-                    'es la que está en {}:\n\n{}'\
+                response = 'La estación número {} es la que está en {}:\n\n{}'\
                     .format(sid, station.address, format(station))
-
         else:
             stations = bicimad.stations.by_search(arguments)
             if not stations:

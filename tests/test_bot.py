@@ -90,6 +90,10 @@ class SearchCommand(ProcessMessage):
     command = ''
     queryname = ''
 
+    not_found = contains_string('no me suena')
+    need_arguments = contains_string('Dime el número o la dirección '
+                                     'para buscar la estación.')
+
     def set_result(self, all, good=[]):
         self.bicimad.stations.by_search.return_value = all
         function = getattr(self.bicimad.stations, self.queryname)
@@ -102,24 +106,24 @@ class SearchCommand(ProcessMessage):
     def test_it_should_check_arguments(self):
         self.process_with_args('  \n')
 
-        self.assert_answer(contains_string('No me has dicho'))
+        self.assert_answer(self.need_arguments)
 
     def test_it_should_ask_for_more_arguments(self):
         conversation = {}
 
         self.process_with_args('  \n', conversation)
-        self.assert_answer(contains_string('No me has dicho'))
+        self.assert_answer(self.need_arguments)
 
         self.set_result([])
         self.process_text('wwwwww', conversation)
-        self.assert_answer(contains_string('no me suena'))
+        self.assert_answer(self.not_found)
 
     def test_it_should_answer_with_no_results_message(self):
         self.set_result([])
 
         self.process_with_args('wwwwww')
 
-        self.assert_answer(contains_string('no me suena'))
+        self.assert_answer(self.not_found)
 
     def test_it_should_answer_only_with_good_results(self):
         self.set_result(STATIONS, STATIONS)
