@@ -7,6 +7,25 @@ station or a free parking around Madrid. You can send messages to the bot using 
 and search for stations using their id, name or address. Or even better, share your position with
 the Bot and will search for the closest stations around you.
 
+## Talk to the bot
+
+Any user cand chat with the Bot and query info about the state of the service in several ways.
+
+1. Share your location
+   When you share your location with the Bot, it will automatically search for the closest active
+   stations and will answer with information about how many bikes and free parkings are.
+
+2. Send a command
+   If you want to search for a specific station or don't want to share your location, use one of
+   the following commands that will search for a station using its text.
+
+   Accepted commands are:
+
+   * `/bici` will search for bikes in the stations that matches the search terms. 
+     eg: ```/bici matadero```
+   * `/plaza` will search for free parkings in stations matching the search.
+     eg: ```/plaza sol```
+
 ## Collaborate
 
 If you have some new ideas about new functionality that you think the bot may include or the Bot
@@ -28,8 +47,8 @@ The python version used for this bot is `Python 3.4`.
 
 ## Disclaimers
 
-*About info*: The information offered by this service is **not official** in any way and should not
-be regarded as such. Replies are based on the same data used by the BiciMad official phone
+*About the info*: The information offered by this service is **not official** in any way and should
+not be regarded as such. Replies are based on the same data used by the BiciMad official phone
 application. Any issues regarding the number free parkings, available bikes or stations are thus
 non related to this software.
 
