@@ -50,18 +50,19 @@ clean:
 
 start:
 	@echo "starting bmad"
-	ssh $(SERVER) /bin/bash  /home/$(DEPLOYER)/run
+	ssh $(SERVER) sudo supervisorctl start $(NAME)
 
 stop:
-	@echo "restarting bmad"
-	ssh $(SERVER) killall bmad || :
+	@echo "stopping bmad"
+	ssh $(SERVER) sudo supervisorctl stop $(NAME)
 
-restart: stop start
+restart:
 	@echo "restarting bmad"
+	ssh $(SERVER) sudo supervisorctl restart $(NAME)
 
 status:
-	@echo "status"
-	ssh $(SERVER) ps aux | grep bmad | grep -v grep
+	@echo "status bmad"
+	ssh $(SERVER) sudo supervisorctl status $(NAME)
 
 
 version:
