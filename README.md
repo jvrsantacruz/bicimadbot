@@ -7,6 +7,8 @@ station or a free parking around Madrid. You can send messages to the bot using 
 and search for stations using their id, name or address. Or even better, share your position with
 the Bot and will search for the closest stations around you.
 
+![Telegram conversation with @BiciMadBot](https://raw.github.com/jvrsantacruz/bicimadbot/master/bicimad_screenshot.jpg)
+
 ## Talk to the bot
 
 Any user cand chat with the Bot and query info about the state of the service in several ways.
