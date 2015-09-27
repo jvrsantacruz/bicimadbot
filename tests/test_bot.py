@@ -69,6 +69,11 @@ class ProcessMessage:
         assert_that(self.telegram.send_message.call_args[0],
                     contains(CHAT_ID, matcher))
 
+    def with_distance(self, stations):
+        for station in stations:
+            station.distance = 100.05
+            yield station
+
 
 class TestStartCommand(ProcessMessage):
     """/start command"""
@@ -91,8 +96,9 @@ class SearchCommand(ProcessMessage):
     queryname = ''
 
     not_found = contains_string('no me suena')
-    need_arguments = contains_string('Dime el número o la dirección '
-                                     'para buscar la estación.')
+    need_arguments = contains_string('Comparte tu posición o dime el número')
+    location_response = contains_string(
+        'Las estaciones que te pillan más a mano')
 
     def set_result(self, all, good=[]):
         self.bicimad.stations.by_search.return_value = all
@@ -117,6 +123,19 @@ class SearchCommand(ProcessMessage):
         self.set_result([])
         self.process_text('wwwwww', conversation)
         self.assert_answer(self.not_found)
+
+    def test_it_should_manage_locations_after_commands(self):
+        conversation = {}
+
+        self.process_with_args('', conversation)
+        self.assert_answer(self.need_arguments)
+
+        self.bicimad.stations.by_distance.return_value = \
+            list(self.with_distance(STATIONS + BAD_STATIONS))
+        self.set_result(STATIONS, STATIONS)
+
+        self.process(MSG_LOCATION, conversation)
+        self.assert_answer(self.location_response)
 
     def test_it_should_answer_with_no_results_message(self):
         self.set_result([])
@@ -228,11 +247,6 @@ class TestProcessLocation(ProcessMessage):
 
         self.assert_answer(contains_string(
             'Estación no disponible a 100m en C/ Dirección X (201)'))
-
-    def with_distance(self, stations):
-        for station in stations:
-            station.distance = 100.05
-            yield station
 
     def setup(self):
         self.setup_mocks()

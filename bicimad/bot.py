@@ -122,13 +122,12 @@ def make_search_command(name, format, queryname):
         arguments = update.arguments
 
         if not arguments:
-            response = 'Dime el número o la dirección para buscar la estación.'\
-                ' También puedes poner directamente por ejemplo "/{} Sol", '\
-                'o compartir tu posición, y terminamos antes.'.format(name)
+            response = 'Comparte tu posición o dime el número '\
+                'o la dirección para buscar.'
 
             telegram.send_message(update.chat_id, response, force_reply=True)
             update = yield
-            arguments = update.text
+            arguments = getattr(update, 'text', '')
 
         if arguments.isdigit():
             sid = int(arguments)
@@ -139,6 +138,9 @@ def make_search_command(name, format, queryname):
             else:
                 response = 'La estación número {} es la que está en {}:\n\n{}'\
                     .format(sid, station.address, format(station))
+        elif update.type == 'location':
+            response = make_location_response(
+                update, telegram, bicimad, queryname)
         else:
             stations = bicimad.stations.by_search(arguments)
             if not stations:
@@ -228,15 +230,13 @@ def process_text_message(telegram, bicimad):
         update, repr_user(update.sender), update.text)
 
 
-@coroutine
-def process_location_message(telegram, bicimad):
-    update = yield
+def make_location_response(update, telegram, bicimad, queryname):
     lat, long = update.location
     log.info(u'%r Got location from %s: lat: %f long: %f',
         update, repr_user(update.sender), lat, long)
 
     stations = bicimad.stations.by_distance(update.location)
-    good, bad = divide_stations(bicimad, stations, 'with_some_use')
+    good, bad = divide_stations(bicimad, stations, queryname)
 
     message = ''
     if good:
@@ -250,6 +250,14 @@ def process_location_message(telegram, bicimad):
         message += 'Estas están cerca, pero como si no estuvieran:\n\n'\
             + '\n'.join(map(format_station, bad))
 
+    return message
+
+
+@coroutine
+def process_location_message(telegram, bicimad):
+    update = yield
+    message = make_location_response(
+        update, telegram, bicimad, 'with_some_use')
     telegram.send_message(update.chat_id, message, reply_to=update.message_id)
 
 
