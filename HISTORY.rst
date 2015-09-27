@@ -1,3 +1,12 @@
+5.1.0  2015-09-27
+-----------------
+
+* Adds searching /bici /plaza by location
+* Adds supervisor for daemon management
+* Improves command no argument message
+* Adds LICENSE
+* Adds README
+
 5.0.0  2015-09-12
 -----------------
 
