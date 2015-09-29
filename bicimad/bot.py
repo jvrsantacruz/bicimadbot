@@ -278,7 +278,9 @@ def process_message(update, telegram, bicimad, conversations={}):
         conversations[update.sender['id']] = convers
 
     # next conversation step
-    convers.send(update)
+    if not send(convers, update):
+        del conversations[update.sender['id']]
+        log.error('Finished conversation %r', update.sender['id'])
 
 
 def start_conversation(update, telegram, bicimad):
