@@ -7,9 +7,3 @@ def to_int(text):
         return int(text)
     except (TypeError, ValueError):
         return None
-
-
-def itemgetter(*fields):
-    def getter(item):
-        return tuple(map(item.get, fields))
-    return getter

@@ -1,16 +1,12 @@
 import logging
 import functools
 
-from .helpers import itemgetter
-
 
 log = logging.getLogger('bicimad.telegram')
 
 
 unpack_user = itemgetter('first_name', 'last_name', 'id')
 unpack_location = itemgetter('latitude', 'longitude')
-
-
 def coroutine(function):
     """Coroutine decorator"""
     @functools.wraps(function)
@@ -96,10 +92,6 @@ def format_station_area(station):
         .format(bikes=station.bikes, bike=plural('bici', station.bikes),
                 spaces=station.spaces, space=plural('plaza', station.spaces),
                 m=int(station.distance), station=station)
-
-
-def repr_user(user):
-    return 'User(name="{} {}", id={})'.format(*unpack_user(user))
 
 
 @coroutine
@@ -231,8 +223,8 @@ command_handlers = dict(
 @coroutine
 def process_command_message(telegram, bicimad):
     update = yield
-    log.info(u'%r Got command: %s from: %s',
-             update, update.command, repr_user(update.sender))
+    log.info(u'%r Got command: %s from: %r',
+             update, update.command, update.sender)
 
     handler = command_handlers.get(update.command, command_unknown)
     routine = handler(telegram, bicimad)
@@ -243,14 +235,14 @@ def process_command_message(telegram, bicimad):
 @coroutine
 def process_text_message(telegram, bicimad):
     update = yield
-    log.info('%r Got message from %s: %s',
-        update, repr_user(update.sender), update.text)
+    log.info('%r Got message from %r: %s',
+        update, update.sender, update.text)
 
 
 def make_location_response(update, bicimad, queryname):
     lat, long = update.location
-    log.info(u'%r Got location from %s: lat: %f long: %f',
-        update, repr_user(update.sender), lat, long)
+    log.info(u'%r Got location from %r: lat: %f long: %f',
+        update, update.sender, lat, long)
 
     stations = bicimad.stations.by_distance(update.location)
     good, bad = divide_stations(bicimad, stations, queryname)
@@ -281,16 +273,17 @@ def process_message(update, telegram, bicimad, conversations={}):
     """Process a new update"""
 
     # Get or create conversation
-    convers = conversations.get(update.sender['id'])
+    convers = conversations.get(update.sender.id)
     if convers is None:
+        log.info('Starting conversation with %r', update.sender)
         convers = conversation(
             lambda update: start_conversation(update, telegram, bicimad))
-        conversations[update.sender['id']] = convers
+        conversations[update.sender.id] = convers
 
     # next conversation step
     if not send(convers, update):
-        del conversations[update.sender['id']]
-        log.error('Finished conversation %r', update.sender['id'])
+        del conversations[update.sender.id]
+        log.error('Finished conversation %r', update.sender.id)
 
 
 def start_conversation(update, telegram, bicimad):
@@ -305,7 +298,6 @@ def start_conversation(update, telegram, bicimad):
         return process_location_message(telegram, bicimad)
 
     else:
-        log.info(u'(update: %d chat: %d) Unmanaged message from %s: %s',
-                update.id, update.chat_id,
-                repr_user(update.sender), update.message)
+        log.info(u'(update: %d chat: %d) Unmanaged message from %r: %s',
+                update.id, update.chat_id, update.sender, update.message)
         telegram.send_message(update.chat_id, u'No te pillo')

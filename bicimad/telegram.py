@@ -32,7 +32,7 @@ def process_updates(updates, config, telegram, bicimad):
     config['telegram.offset'] = last_update
 
 
-class Telegram(object):
+class Telegram:
     def __init__(self, host, token, timeout=None, poll_timeout=None):
         self.url = urljoin(host, '/bot' + token)
         #: max time to wait for regular responses
@@ -89,6 +89,24 @@ class Telegram(object):
         return self.send_telegram('sendLocation', **kwargs)
 
 
+class User:
+    def __init__(self, id, first_name, last_name, **kwargs):
+        self.id = id
+        self.first_name = first_name
+        self.last_name = last_name
+
+    @classmethod
+    def from_response(cls, user):
+        return cls(**user)
+
+    def __repr__(self):
+        return 'User' + str(self)
+
+    def __str__(self):
+        return '(name="{} {}", id={})'.format(
+            self.first_name, self.last_name, self.id)
+
+
 class Update:
     def __init__(self, update):
         """Load from Telegram Update
@@ -116,7 +134,7 @@ class Update:
         self.id = update['update_id']
         self.message = update['message']
         self.message_id = self.message['message_id']
-        self.sender = self.message['from']
+        self.sender = User.from_response(self.message['from'])
         self.chat = self.message['chat']
         self.chat_id = self.chat['id']
         self.date = datetime.datetime.fromtimestamp(self.message.get('date'))

@@ -6,7 +6,7 @@ from bicimad.telegram import Telegram, Update
 
 import httpretty
 from hamcrest import (assert_that, has_property, all_of, ends_with,
-                      starts_with, is_, has_entry, has_entries)
+                      starts_with, is_, has_entry, has_entries, has_properties)
 
 from .messages import UPDATE_CHAT, UPDATE_COMMAND, UPDATE_LOCATION, LOCATION
 
@@ -88,7 +88,7 @@ class UpdateTest:
 
     def test_it_should_have_sender(self):
         assert_that(self.update, has_property(
-            'sender', self.response['message']['from']))
+            'sender', has_properties(self.response['message']['from'])))
 
     def test_it_should_have_chat(self):
         assert_that(self.update, has_property(
