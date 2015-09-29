@@ -130,14 +130,7 @@ def make_search_command(name, format, queryname):
             arguments = getattr(update, 'text', '')
 
         if arguments.isdigit():
-            sid = int(arguments)
-            station = bicimad.stations.by_id(sid)
-            if station is None:
-                response = 'Mmmm, no hay ninguna estación '\
-                    'con id {}. Prueba con el nombre.'.format(sid)
-            else:
-                response = 'La estación número {} es la que está en {}:\n\n{}'\
-                    .format(sid, station.address, format(station))
+            response = make_id_query_response(int(arguments), bicimad, format)
         elif update.type == 'location':
             response = make_location_response(update, bicimad, queryname)
         else:
@@ -147,6 +140,19 @@ def make_search_command(name, format, queryname):
         telegram.send_message(update.chat_id, response)
 
     return function
+
+
+def make_id_query_response(sid, bicimad, format):
+    station = bicimad.stations.by_id(sid)
+
+    if station is None:
+        response = 'Mmmm, no hay ninguna estación '\
+            'con id {}. Prueba con el nombre.'.format(sid)
+    else:
+        response = 'La estación número {} es la que está en {}:\n\n{}'\
+            .format(sid, station.address, format(station))
+
+    return response
 
 
 def make_query_response(arguments, bicimad, format, queryname):
