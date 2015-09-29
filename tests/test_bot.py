@@ -151,7 +151,7 @@ class SearchCommand(ProcessMessage):
 
         self.assert_answer(all_of(
             contains_string('puede que sea alguna de estas'),
-            contains_string(self.command),
+            contains_string(self.object_name),
             contains_string(STATIONS[0].address),
             contains_string(STATIONS[1].address)
         ))
@@ -164,7 +164,7 @@ class SearchCommand(ProcessMessage):
         self.assert_answer(all_of(
             contains_string('puede que sea alguna de estas'),
             contains_string('Estas me salen pero no creo que te sirvan'),
-            contains_string(self.command),
+            contains_string(self.object_name),
             contains_string(STATIONS[0].address),
             contains_string(STATIONS[1].address),
             contains_string(BAD_STATIONS[0].address),
@@ -199,22 +199,20 @@ class SearchCommand(ProcessMessage):
 
 class TestBiciCommand(SearchCommand):
     command = 'bici'
+    object_name = 'bici'
     queryname = 'with_bikes'
 
 
 class TestPlazaCommand(SearchCommand):
     command = 'plaza'
+    object_name = 'plaza'
     queryname = 'with_spaces'
 
 
-class TestEstacionCommand(ProcessMessage):
-    def test_it_should_process_estacion_command(self):
-        self.process(message('/estacion'))
-
-        self.assert_answer(self.command_not_implemented)
-
-    command_not_implemented = contains_string(
-        'Este comando funcionará próximamente')
+class TestEstacionCommand(SearchCommand):
+    command = 'estacion'
+    object_name = 'plaza'
+    queryname = 'with_some_use'
 
 
 class TestProcessLocation(ProcessMessage):

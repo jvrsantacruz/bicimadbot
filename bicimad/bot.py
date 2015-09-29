@@ -186,6 +186,7 @@ def make_query_response(arguments, bicimad, format, queryname):
 
 command_bici = make_search_command('bici', format_bikes, 'with_bikes')
 command_plaza = make_search_command('plaza', format_spaces, 'with_spaces')
+command_estacion = make_search_command('estacion', format_station, 'with_some_use')
 
 
 @coroutine
@@ -198,13 +199,6 @@ def command_help(telegram, bicimad):
         '* Es mucho más rápido darle a "compartir posición" y te '\
         'diré todas las que tienes alrededor.\n\n'\
         'Vamos poco a poco añadiendo más posibilidades :)'
-    telegram.send_message(update.chat_id, response)
-
-
-@coroutine
-def command_estacion(telegram, bicimad):
-    update = yield
-    response = "Este comando funcionará próximamente"
     telegram.send_message(update.chat_id, response)
 
 
