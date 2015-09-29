@@ -81,7 +81,7 @@ def format_station(station):
     if not station.enabled:
         return 'Estación no disponible en {!r}'.format(station)
 
-    return '- {bikes} {bike} y {spaces} {space}\n  en {station!r}'\
+    return '- {bikes} {bike} y {spaces} {space} en {station!r}'\
         .format(bikes=station.bikes, bike=plural('bici', station.bikes),
                 spaces=station.spaces, space=plural('plaza', station.spaces),
                 station=station)
