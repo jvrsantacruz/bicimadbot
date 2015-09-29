@@ -139,8 +139,7 @@ def make_search_command(name, format, queryname):
                 response = 'La estación número {} es la que está en {}:\n\n{}'\
                     .format(sid, station.address, format(station))
         elif update.type == 'location':
-            response = make_location_response(
-                update, telegram, bicimad, queryname)
+            response = make_location_response(update, bicimad, queryname)
         else:
             response = make_query_response(
                 arguments, bicimad, format, queryname)
@@ -238,7 +237,7 @@ def process_text_message(telegram, bicimad):
         update, repr_user(update.sender), update.text)
 
 
-def make_location_response(update, telegram, bicimad, queryname):
+def make_location_response(update, bicimad, queryname):
     lat, long = update.location
     log.info(u'%r Got location from %s: lat: %f long: %f',
         update, repr_user(update.sender), lat, long)
@@ -264,8 +263,7 @@ def make_location_response(update, telegram, bicimad, queryname):
 @coroutine
 def process_location_message(telegram, bicimad):
     update = yield
-    message = make_location_response(
-        update, telegram, bicimad, 'with_some_use')
+    message = make_location_response(update, bicimad, 'with_some_use')
     telegram.send_message(update.chat_id, message, reply_to=update.message_id)
 
 
