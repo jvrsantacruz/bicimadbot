@@ -1,3 +1,8 @@
+6.0.2  2015-09-30
+-----------------
+
+* Fixes station format without calculated distance
+
 6.0.1  2015-09-30
 -----------------
 
