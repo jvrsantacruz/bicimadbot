@@ -79,6 +79,16 @@ def format_spaces(station):
 
 def format_station(station):
     if not station.enabled:
+        return 'Estación no disponible en {!r}'.format(station)
+
+    return '- {bikes} {bike} y {spaces} {space}\n  en {station!r}'\
+        .format(bikes=station.bikes, bike=plural('bici', station.bikes),
+                spaces=station.spaces, space=plural('plaza', station.spaces),
+                station=station)
+
+
+def format_station_area(station):
+    if not station.enabled:
         return 'Estación no disponible a {}m en {!r}'.format(
             int(station.distance), station)
 
@@ -248,14 +258,14 @@ def make_location_response(update, bicimad, queryname):
     message = ''
     if good:
         message = 'Las estaciones que te pillan más a mano son:\n\n'\
-            + '\n'.join(map(format_station, good))
+            + '\n'.join(map(format_station_area, good))
 
     if good and bad:
         message += '\n\n'
 
     if bad:
         message += 'Estas están cerca, pero como si no estuvieran:\n\n'\
-            + '\n'.join(map(format_station, bad))
+            + '\n'.join(map(format_station_area, bad))
 
     return message
 
