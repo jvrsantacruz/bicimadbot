@@ -142,33 +142,41 @@ def make_search_command(name, format, queryname):
             response = make_location_response(
                 update, telegram, bicimad, queryname)
         else:
-            stations = bicimad.stations.by_search(arguments)
-            if not stations:
-                response = 'Uhh no me suena esa dirección para '\
-                    'ninguna estación. Afina un poco más.'
-            else:
-                response = ''
-
-                good, bad = divide_stations(bicimad, stations, queryname)
-
-                # Valid search results
-                if good:
-                    response += 'Pues puede que sea alguna de estas:\n\n'\
-                        + '\n'.join(map(format, good))
-
-                # separator
-                if good and bad:
-                    response += '\n\n'
-
-                # Valid search results but empty or unavailable
-                if bad:
-                    response += 'Estas me salen pero no creo '\
-                        'que te sirvan de mucho:\n\n'\
-                        + '\n'.join(map(format, bad))
+            response = make_query_response(
+                arguments, bicimad, format, queryname)
 
         telegram.send_message(update.chat_id, response)
 
     return function
+
+
+def make_query_response(arguments, bicimad, format, queryname):
+    stations = bicimad.stations.by_search(arguments)
+
+    if not stations:
+        response = 'Uhh no me suena esa dirección para '\
+            'ninguna estación. Afina un poco más.'
+    else:
+        response = ''
+
+        good, bad = divide_stations(bicimad, stations, queryname)
+
+        # Valid search results
+        if good:
+            response += 'Pues puede que sea alguna de estas:\n\n'\
+                + '\n'.join(map(format, good))
+
+        # separator
+        if good and bad:
+            response += '\n\n'
+
+        # Valid search results but empty or unavailable
+        if bad:
+            response += 'Estas me salen pero no creo '\
+                'que te sirvan de mucho:\n\n'\
+                + '\n'.join(map(format, bad))
+
+    return response
 
 
 command_bici = make_search_command('bici', format_bikes, 'with_bikes')
