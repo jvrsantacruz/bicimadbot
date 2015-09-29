@@ -27,6 +27,8 @@ Any user cand chat with the Bot and query info about the state of the service in
      eg: ```/bici matadero```
    * `/plaza` will search for free parkings in stations matching the search.
      eg: ```/plaza sol```
+   * `/estacion` will search for all stations by id, name or position.
+     eg: ```/estacion lavapies```
 
 ## Collaborate
 
