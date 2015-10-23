@@ -74,12 +74,15 @@ class Telegram:
         return requests.post(urljoin(self.url, 'getUpdates'),
                             timeout=timeout, json=params).json()
 
-    def send_message(self, chat_id, text, reply_to=None, force_reply=None):
+    def send_message(self, chat_id, text, reply_to=None, force_reply=None,
+                     selective=None):
         kwargs = dict(chat_id=chat_id, text=text)
         if force_reply:
             kwargs['reply_markup'] = dict(force_reply=True)
         if reply_to:
             kwargs['reply_to_message_id'] = reply_to
+        if selective is not None:
+            kwargs['selective'] = bool(selective)
         return self.send_telegram('sendMessage', **kwargs)
 
     def send_location(self, chat_id, latitude, longitude, reply_to=None):

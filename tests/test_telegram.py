@@ -56,6 +56,14 @@ class TestTelegram:
         assert_that(self.sent_json,
             has_entry('reply_markup', has_entry('force_reply', True)))
 
+    @httpretty.activate
+    def test_it_should_set_selective(self):
+        self.register('sendMessage')
+
+        self.telegram.send_message(CHAT_ID, TEXT, selective=True)
+
+        assert_that(self.sent_json, has_entry('selective', True))
+
     @property
     def sent_json(self):
         return json.loads(httpretty.last_request().body.decode('utf-8'))

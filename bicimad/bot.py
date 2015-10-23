@@ -5,8 +5,6 @@ import functools
 log = logging.getLogger('bicimad.telegram')
 
 
-unpack_user = itemgetter('first_name', 'last_name', 'id')
-unpack_location = itemgetter('latitude', 'longitude')
 def coroutine(function):
     """Coroutine decorator"""
     @functools.wraps(function)
@@ -127,7 +125,8 @@ def make_search_command(name, format, queryname):
             response = 'Comparte tu posición o dime el número '\
                 'o la dirección para buscar.'
 
-            telegram.send_message(update.chat_id, response, force_reply=True)
+            telegram.send_message(update.chat_id, response,
+                                  force_reply=True, selective=True)
             update = yield
             arguments = getattr(update, 'text', '')
 
