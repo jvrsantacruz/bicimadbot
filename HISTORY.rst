@@ -1,3 +1,9 @@
+6.1.0 (2015-10-23)
+------------------
+
+* Adds selective argument to send_message
+* Adds User datatype
+
 6.0.3  2015-09-30
 -----------------
 
