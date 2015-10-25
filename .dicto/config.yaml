@@ -1,0 +1,7 @@
+default:
+    template: {{config_dir}}/changelog.tpl.rst
+    git: true
+    git_repo: {{config_dir}}/..
+    git_version: master
+    exe:
+        version: python setup.py --version | tr -d '\n'
